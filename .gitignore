@@ -1,5 +1,7 @@
 .idea/
 out/
+src/main
+
 # Compiled class file
 *.class
 
