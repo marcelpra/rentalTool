@@ -8,7 +8,7 @@
         <servlet-class>com.vaadin.server.VaadinServlet</servlet-class>
         <init-param>
             <param-name>UI</param-name>
-            <param-value>com.MyVaadinApplication</param-value>
+            <param-value>com.RentalTool</param-value>
         </init-param>
     </servlet>
     <servlet-mapping>

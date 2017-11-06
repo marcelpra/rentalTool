@@ -1,5 +1,6 @@
 package com.presenter;
 
+import com.RentalTool;
 import com.models.UserModel;
 import com.vaadin.ui.*;
 import com.views.LoginView;
@@ -18,8 +19,6 @@ public class LoginPresenter implements LoginView.LoginViewListener {
     @Override
     public void buttonClick(String username, String password) {
 
-        System.out.println("button clicked");
-
         // process login
         Boolean loginSuccess = model.login(username, password);
 
@@ -29,8 +28,8 @@ public class LoginPresenter implements LoginView.LoginViewListener {
             view.setDisplay(model.getErrorMsg());
         } else {
             // navigate to user view
-            UI.getCurrent().getNavigator().navigateTo("listUsers");
-//            UI.getCurrent().getNavigator().navigateTo("createUser");
+            UI.getCurrent().getNavigator().navigateTo(RentalTool.LIST_USERS);
+//            UI.getCurrent().getNavigator().navigateTo(CREATE_USER);
         }
     }
 }

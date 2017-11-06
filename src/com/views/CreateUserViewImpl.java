@@ -1,14 +1,8 @@
 package com.views;
 import com.SecurePageComponent;
 import com.models.UserModel;
-import com.presenter.UserPresenter;
 import com.vaadin.data.*;
 import com.vaadin.data.validator.EmailValidator;
-import com.vaadin.data.validator.StringLengthValidator;
-import com.vaadin.navigator.View;
-import com.vaadin.navigator.ViewChangeListener;
-import com.vaadin.server.ErrorMessage;
-import com.vaadin.server.UserError;
 import com.vaadin.ui.*;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Label;
@@ -77,7 +71,7 @@ public class CreateUserViewImpl extends SecurePageComponent implements CreateUse
         binder.forField(emailField)
                 .asRequired("Email required")
                 .withValidator(new EmailValidator("invalid email"))
-                .bind(UserModel::getUsername, UserModel::setUsername);
+                .bind(UserModel::getEmail, UserModel::setEmail);
         binder.forField(firstnameField)
                 .asRequired("Forename required")
                 .bind(UserModel::getFirstname, UserModel::setFirstname);
