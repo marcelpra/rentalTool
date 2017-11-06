@@ -29,7 +29,8 @@ public class LoginPresenter implements LoginView.LoginViewListener {
             view.setDisplay(model.getErrorMsg());
         } else {
             // navigate to user view
-            UI.getCurrent().getNavigator().navigateTo("createUser");
+            UI.getCurrent().getNavigator().navigateTo("listUsers");
+//            UI.getCurrent().getNavigator().navigateTo("createUser");
         }
     }
 }

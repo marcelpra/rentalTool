@@ -8,8 +8,8 @@ import org.mindrot.jbcrypt.BCrypt;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.sql.SQLException;
+import java.util.*;
 
 public class UserModel {
 
@@ -178,17 +178,7 @@ public class UserModel {
             stmt.setString(1, searchArgument);
             ResultSet result = stmt.executeQuery();
 
-            while (result.next()) {
-                UserModel user = new UserModel();
-                user.setUserId(result.getInt("iduser"));
-                user.setUsername(result.getString("username"));
-                user.setFirstname(result.getString("firstname"));
-                user.setLastname(result.getString("lastname"));
-                user.setDepartment(result.getString("department"));
-                user.setUserRole(result.getString("user_role"));
-                user.password = result.getString("password");
-                resultData.add(user);
-            }
+            resultData = setResultData(result, resultData);
         } catch (Exception e) {
             this.errorMsg = "query not successful";
             e.printStackTrace();
@@ -202,6 +192,49 @@ public class UserModel {
             resultData.add(0, new UserModel());
         }
         return resultData.get(0);
+    }
+
+    public static List<UserModel> getUsers() {
+        ArrayList<UserModel> resultData = new ArrayList<>();
+        Connection connection = null;
+
+        try {
+            // get connection
+            connection = dbConnector.getConnection();
+
+            // prepare and build sql update query
+            String sql = "SELECT * FROM user";
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            ResultSet result = stmt.executeQuery();
+
+            resultData = setResultData(result, resultData);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            dbConnector.closeConnection(connection);
+        }
+
+        return resultData;
+    }
+
+    private static ArrayList setResultData(ResultSet result, ArrayList<UserModel> returnValue) {
+        try {
+            while (result.next()) {
+                UserModel user = new UserModel();
+                user.setUserId(result.getInt("iduser"));
+                user.setUsername(result.getString("username"));
+                user.setFirstname(result.getString("firstname"));
+                user.setLastname(result.getString("lastname"));
+                user.setDepartment(result.getString("department"));
+                user.setUserRole(result.getString("user_role"));
+                user.password = result.getString("password");
+                returnValue.add(user);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return returnValue;
     }
 
     public String getErrorMsg() {

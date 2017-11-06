@@ -2,6 +2,7 @@ package com;
 
 import com.models.UserModel;
 import com.presenter.LoginPresenter;
+import com.presenter.UserListPresenter;
 import com.presenter.UserPresenter;
 import com.vaadin.navigator.Navigator;
 import com.vaadin.navigator.View;
@@ -9,6 +10,7 @@ import com.vaadin.navigator.ViewProvider;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.*;
 import com.views.CreateUserViewImpl;
+import com.views.ListUserViewImpl;
 import com.views.LoginView;
 import com.views.LoginViewImpl;
 
@@ -34,8 +36,12 @@ public class MyVaadinApplication extends UI {
 
         new UserPresenter(model, viewl);
 
+        ListUserViewImpl view2 = new ListUserViewImpl();
+        new UserListPresenter(model, view2);
+
         navigator.addView("", view);
         navigator.addView("createUser", viewl);
+        navigator.addView("listUsers", view2);
 
         // I can switch now between view by adding /#!user to the url to get to the create user thing
 //        navigator.addProvider(new ViewProvider() {

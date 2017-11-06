@@ -1,6 +1,6 @@
 .idea/
 out/
-src/main
+src/main/resources
 
 # Compiled class file
 *.class
