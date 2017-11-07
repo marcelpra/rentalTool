@@ -3,7 +3,7 @@ package com.views;
 import com.models.UserModel;
 import com.vaadin.navigator.View;
 
-public interface CreateUserView extends View {
+public interface UserFormView extends View {
 
     public void setErrorMsg (String value);
 
@@ -14,5 +14,5 @@ public interface CreateUserView extends View {
             UserModel userModel
         );
     }
-    public void addListener (CreateUserView.UserViewListener listener);
+    public void addListener (UserFormView.UserViewListener listener);
 }

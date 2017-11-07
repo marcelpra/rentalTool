@@ -1,9 +1,7 @@
 package com.views;
 
-import com.presenter.LoginPresenter;
 import com.vaadin.navigator.View;
 import com.vaadin.ui.*;
-import com.views.LoginView;
 
 import java.util.ArrayList;
 import java.util.List;

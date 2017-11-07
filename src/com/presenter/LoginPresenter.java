@@ -28,8 +28,8 @@ public class LoginPresenter implements LoginView.LoginViewListener {
             view.setDisplay(model.getErrorMsg());
         } else {
             // navigate to user view
-            UI.getCurrent().getNavigator().navigateTo(RentalTool.LIST_USERS);
-//            UI.getCurrent().getNavigator().navigateTo(CREATE_USER);
+//            UI.getCurrent().getNavigator().navigateTo(RentalTool.LIST_USERS);
+            UI.getCurrent().getNavigator().navigateTo(RentalTool.CREATE_USER + "/14");
         }
     }
 }

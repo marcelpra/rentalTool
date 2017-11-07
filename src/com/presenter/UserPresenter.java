@@ -1,14 +1,14 @@
 package com.presenter;
 
 import com.models.UserModel;
-import com.views.CreateUserView;
+import com.views.UserFormView;
 
-public class UserPresenter implements CreateUserView.UserViewListener {
+public class UserPresenter implements UserFormView.UserViewListener {
 
     private UserModel model;
-    private CreateUserView view;
+    private UserFormView view;
 
-    public UserPresenter(UserModel model, CreateUserView view) {
+    public UserPresenter(UserModel model, UserFormView view) {
         this.model = model;
         this.view = view;
         view.addListener(this);
@@ -17,8 +17,14 @@ public class UserPresenter implements CreateUserView.UserViewListener {
     @Override
     public void buttonClick(UserModel userModel) {
 
-        // create user
-        boolean ok = model.createUser(userModel);
+        Boolean ok;
+
+        // update or create user
+        if (userModel.getUserID() != null) {
+            ok = model.updateUser(userModel);
+        } else {
+            ok = model.createUser(userModel);
+        }
 
         // get error and success message to display them in view
         if (!ok) {

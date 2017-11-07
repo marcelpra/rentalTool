@@ -6,9 +6,6 @@ import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.UI;
-import com.views.LoginView;
-import com.views.LoginViewImpl;
-import org.apache.xpath.operations.Bool;
 
 public class SecurePageComponent extends CustomComponent implements View {
 
@@ -16,6 +13,11 @@ public class SecurePageComponent extends CustomComponent implements View {
     public void enter(ViewChangeListener.ViewChangeEvent event) {
         System.out.println("secure page called");
 
+        // check Access
+        checkAccess();
+    }
+
+    protected void checkAccess() {
         // get user id and token from session
         VaadinSession session = getSession();
 

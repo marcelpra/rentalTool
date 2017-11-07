@@ -34,6 +34,7 @@ public class UserModel {
     /**
      * Method to create a new User
      *
+     * @param userModel the userModel to be saved in database
      * @return Boolean
      */
     public boolean createUser(UserModel userModel) {
@@ -44,7 +45,7 @@ public class UserModel {
             connection = dbConnector.getConnection();
 
             // prepare and build sql insert query
-            String sql = "INSERT INTO user (username, firstname, lastname, department, user_role, password) " +
+            String sql = "INSERT INTO user (email, firstname, lastname, department, user_role, password) " +
                     "VALUES (?, ?, ?, ?, ?, ?)";
             PreparedStatement stmt = connection.prepareStatement(sql);
             stmt.setString(1, userModel.email);
@@ -81,6 +82,7 @@ public class UserModel {
     /**
      * Method to update a new User
      *
+     * @param userModel the userModel to be saved in database
      * @return Boolean
      */
     public boolean updateUser(UserModel userModel) {
@@ -127,6 +129,9 @@ public class UserModel {
     /**
      * Method to check password, returning true or false
      * depending if given password matches saved password for given email
+     *
+     * @param username given username
+     * @param password given password
      */
     public Boolean login(String username, String password) {
 
@@ -172,6 +177,12 @@ public class UserModel {
         } else {
             return true;
         }
+    }
+
+    public UserModel getUser(Integer userID) {
+        UserModel user = queryUser("user_ID", userID.toString());
+        System.out.println(user.getEmail());
+        return user;
     }
 
     public static List<UserModel> getUsers() {
@@ -285,15 +296,35 @@ public class UserModel {
         this.expiry = expiry;
     }
 
+    /**
+     * Function that hashes a given string
+     *
+     * @param plaintextPassword the given plaintext password
+     * @return String
+     */
     private static String hashPassword(String plaintextPassword) {
         String salt = BCrypt.gensalt(workload);
         return BCrypt.hashpw(plaintextPassword, salt);
     }
 
+    /**
+     * Validates given password with stored password
+     *
+     * @param userPassword the given user password
+     * @param storedPassword the stored user password
+     * @return Boolean
+     */
     private static Boolean checkPassword(String userPassword, String storedPassword) {
         return BCrypt.checkpw(userPassword, storedPassword);
     }
 
+    /**
+     * Binds query result to userModel
+     *
+     * @param result the query result
+     * @param returnValue the array list where we pass the result to
+     * @return ArrayList
+     */
     private static ArrayList setResultData(ResultSet result, ArrayList<UserModel> returnValue) {
         try {
             while (result.next()) {
@@ -319,6 +350,8 @@ public class UserModel {
     /**
      * General method to query for a single user by specific field
      *
+     * @param searchField the column of database table to search for argument
+     * @param searchArgument the criteria for the search
      * @return UserModel
      */
     private UserModel queryUser(String searchField, String searchArgument) {

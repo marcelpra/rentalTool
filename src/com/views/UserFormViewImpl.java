@@ -3,6 +3,7 @@ import com.SecurePageComponent;
 import com.models.UserModel;
 import com.vaadin.data.*;
 import com.vaadin.data.validator.EmailValidator;
+import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.ui.*;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Label;
@@ -11,13 +12,13 @@ import com.vaadin.ui.TextField;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CreateUserViewImpl extends SecurePageComponent implements CreateUserView, Button.ClickListener {
+public class UserFormViewImpl extends SecurePageComponent implements UserFormView, Button.ClickListener {
 
     private Label errorMsg = new Label("");
     private Label successMsg = new Label("");
 
     private TextField emailField = new TextField("Email");
-    private TextField passwordField = new TextField("Password");
+    private TextField passwordField = new PasswordField("Password");
     private TextField firstnameField = new TextField("Firstname");
     private TextField lastnameField = new TextField("Lastname");
     private TextField departmentField = new TextField("Department");
@@ -27,12 +28,77 @@ public class CreateUserViewImpl extends SecurePageComponent implements CreateUse
     private ComboBox<String> statusField = new ComboBox<>("Status");
     private ComboBox<String> userroleField = new ComboBox<>("Select User-Role");
 
-    public CreateUserViewImpl() {
+    /**
+     * Sets initial data to view when it will change
+     *
+     * @param event the ViewChange event
+     */
+    public void enter(ViewChangeListener.ViewChangeEvent event) {
 
+        // check access
+        checkAccess();
+
+        Boolean isParam = false;
+
+        // check url params
+        if(event.getParameters() != null){
+            String[] msgs = event.getParameters().split("/");
+            for (String msg : msgs) {
+                if (msg != null && !msg.trim().isEmpty()) {
+                    this.user = this.user.getUser(Integer.valueOf(msg));
+                    isParam = true;
+                }
+            }
+        }
+
+        if(!isParam) {
+            this.user = new UserModel();
+        }
+
+        // creating layout
         HorizontalLayout layout = new HorizontalLayout();
         layout.setSizeFull();
 
-        Label header = new Label("Create new User");
+        // adding layout
+        setCompositionRoot(layout);
+
+        // adding form
+        setForm(layout, this.user);
+    }
+
+    /**
+     * Sets an error message
+     *
+     * @param value the message to be displayed as error message
+     */
+    public void setErrorMsg(String value) {
+        if (value.length() > 0) {
+                errorMsg.setValue(value);
+                errorMsg.setVisible(true);
+        }
+    }
+
+    /**
+     * Sets a success message
+     *
+     * @param value the message to be displayed as success message
+     */
+    public void setSuccessMsg(String value) {
+        if ( value.length() > 0) {
+                successMsg.setValue(value);
+                successMsg.setVisible(true);
+        }
+    }
+
+    /**
+     * Creates a Form to update or create a User
+     *
+     * @param layout the complete where the form should be added
+     * @param user the userModel
+     */
+    private void setForm(HorizontalLayout layout, UserModel user) {
+
+        Label header = new Label("");
         header.setStyleName("h1 bold align-center");
         header.setSizeFull();
 
@@ -45,7 +111,6 @@ public class CreateUserViewImpl extends SecurePageComponent implements CreateUse
         statusField.setWidth(100, Unit.PERCENTAGE);
         statusField.setEmptySelectionAllowed(false);
         statusField.setItems("active", "inactive");
-        statusField.setValue("active");
         userroleField.setWidth(100, Unit.PERCENTAGE);
         userroleField.setEmptySelectionAllowed(false);
         userroleField.setEmptySelectionCaption("please select");
@@ -91,20 +156,30 @@ public class CreateUserViewImpl extends SecurePageComponent implements CreateUse
 
         // adding button with form validation
         binder.readBean(user);
-        Button createButton = new Button("Create User",
-        event -> {
-                // reset error and success messages
-                errorMsg.setVisible(false);
-                successMsg.setVisible(false);
-                try {
+        Button createButton = new Button("",
+                event -> {
+                    // reset error and success messages
+                    errorMsg.setVisible(false);
+                    successMsg.setVisible(false);
+                    try {
                         binder.writeBean(user);
                         buttonClick(event);
-                } catch (ValidationException e) {
-                        setErrorMsg("User User could not be saved, please check required fields.");
-                }
-        });
+                    } catch (ValidationException e) {
+                        setErrorMsg("User could not be saved, please check required fields.");
+                    }
+                });
         createButton.setStyleName("primary align-center");
         createButton.setWidth(100, Unit.PERCENTAGE);
+
+        // set correct captures
+        if (user.getUserID() != null) {
+            header.setValue("Update User");
+            createButton.setCaption("Update User");
+        } else {
+            createButton.setCaption("Create User");
+            header.setValue("Create new User");
+            statusField.setValue("active");
+        }
 
         // add all components to form
         form.addComponents(
@@ -121,36 +196,18 @@ public class CreateUserViewImpl extends SecurePageComponent implements CreateUse
                 createButton
         );
         form.setComponentAlignment(header, Alignment.MIDDLE_CENTER);
-
-        // adding form to layout
         layout.addComponent(form);
         layout.setComponentAlignment(form, Alignment.MIDDLE_CENTER);
-
-        setCompositionRoot(layout);
-    }
-
-    public void setErrorMsg(String value) {
-        if (value.length() > 0) {
-                errorMsg.setValue(value);
-                errorMsg.setVisible(true);
-        }
-    }
-
-    public void setSuccessMsg(String value) {
-        if ( value.length() > 0) {
-                successMsg.setValue(value);
-                successMsg.setVisible(true);
-        }
     }
 
     List<UserViewListener> listeners = new ArrayList<UserViewListener>();
     public void addListener(UserViewListener listener) {
-            listeners.add(listener);
+        listeners.add(listener);
     }
 
     @Override
     public void buttonClick(Button.ClickEvent event) {
         for (UserViewListener listener: listeners)
-                listener.buttonClick(this.user);
+            listener.buttonClick(this.user);
     }
 }

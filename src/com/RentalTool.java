@@ -7,7 +7,7 @@ import com.presenter.UserPresenter;
 import com.vaadin.navigator.Navigator;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.*;
-import com.views.CreateUserViewImpl;
+import com.views.UserFormViewImpl;
 import com.views.ListUserViewImpl;
 import com.views.LoginViewImpl;
 
@@ -21,6 +21,9 @@ public class RentalTool extends UI {
     @Override
     public void init(VaadinRequest request) {
 
+        String msgs = request.getParameter("14");
+        System.out.println(msgs);
+
         Navigator navigator = new Navigator(this, this);
 
         // load models
@@ -28,7 +31,7 @@ public class RentalTool extends UI {
 
         // load views
         LoginViewImpl loginView = new LoginViewImpl();
-        CreateUserViewImpl createUserView = new CreateUserViewImpl();
+        UserFormViewImpl createUserView = new UserFormViewImpl();
         ListUserViewImpl listUserView = new ListUserViewImpl();
 
         // TODO think about a ChangeUserView as we could use it for updating and creating an User
