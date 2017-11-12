@@ -127,7 +127,7 @@ public class MenuBarView extends CustomComponent {
             case "Reservations":
                 menuButton.setIcon(VaadinIcons.CALENDAR);
                 menuButton.addClickListener(
-                        event -> UI.getCurrent().getNavigator().navigateTo(RentalTool.HOME + "/" + RentalTool.CREATE_USER)
+                        event -> UI.getCurrent().getNavigator().navigateTo(RentalTool.HOME + "/" + RentalTool.LIST_RESERVATION)
                 );
                 break;
             case "Gadgets":

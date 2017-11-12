@@ -20,9 +20,7 @@ public class UserModel {
     private String department;
     private String password;
     private String userRole;
-
     private Boolean status;
-
     private Date createdTimestamp;
     private String accessToken;
     private Timestamp expiry;
@@ -34,8 +32,35 @@ public class UserModel {
     public static final String ROLE_EMPLOYEE = "Employee";
     public static final String ROLE_USER = "User";
 
-    private static final Integer LOGIN_EXPIRYY = 30;
+    private static final Integer LOGIN_EXPIRY = 30;
 
+    private Boolean validate() {
+        if (email == null || email.isEmpty()) {
+            errorMsg = "Email not set";
+            return false;
+        }
+        if (firstname == null || firstname.isEmpty()) {
+            errorMsg = "Firstname not set";
+            return false;
+        }
+        if (lastname == null || lastname.isEmpty()) {
+            errorMsg = "Lastname not set";
+            return false;
+        }
+        if (department == null || department.isEmpty()) {
+            errorMsg = "Department not set";
+            return false;
+        }
+        if (status == null) {
+            errorMsg = "Status not set";
+            return false;
+        }
+        if (userRole == null || userRole.isEmpty()) {
+            errorMsg = "User-Role not set";
+            return false;
+        }
+        return true;
+    }
     /**
      * Method to create a new User
      *
@@ -43,6 +68,11 @@ public class UserModel {
      * @return Boolean
      */
     public boolean createUser(UserModel userModel) {
+
+        if (!userModel.validate()) {
+            return false;
+        }
+
         Connection connection = null;
         int countRow = 0;
         final String tempPassword = RandomStringUtils.randomAlphanumeric(6);
@@ -94,15 +124,21 @@ public class UserModel {
      * @return Boolean
      */
     public boolean updateUser(UserModel userModel) {
+
+        System.out.println("department: " + userModel.department);
+        if (!userModel.validate()) {
+            return false;
+        }
+
         Connection connection = null;
         int countRow = 0;
 
         // only allow Admins to update different User then the own
-        String sessionUser = String.valueOf(VaadinSession.getCurrent().getAttribute("userID"));
-        if (!validateAccessControl(ROLE_ADMIN) && !sessionUser.equals(userModel.getUserID().toString())) {
-            this.errorMsg = "not allowed to update this user";
-            return false;
-        }
+//        String sessionUser = String.valueOf(VaadinSession.getCurrent().getAttribute("userID"));
+//        if (!validateAccessControl(ROLE_ADMIN) && !sessionUser.equals(userModel.getUserID().toString())) {
+//            this.errorMsg = "not allowed to update this user";
+//            return false;
+//        }
 
         try {
             // get connection
@@ -166,7 +202,7 @@ public class UserModel {
 
         // generate access token
         user.accessToken = RandomStringUtils.randomAlphanumeric(32);
-        user.expiry = new Timestamp(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(LOGIN_EXPIRYY));
+        user.expiry = new Timestamp(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(LOGIN_EXPIRY));
 
         Boolean updateOk = updateUser(user);
         if (!updateOk) {
@@ -351,7 +387,7 @@ public class UserModel {
             String sql = "SELECT * FROM user WHERE " + searchField.toString() + " = ? LIMIT 1";
 
             // add access control condition to query
-            sql = sql + accessControl();
+//            sql = sql + accessControl();
 
             PreparedStatement stmt = connection.prepareStatement(sql);
             stmt.setString(1, searchArgument);

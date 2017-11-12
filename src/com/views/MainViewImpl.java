@@ -2,7 +2,10 @@ package com.views;
 
 import com.RentalTool;
 import com.SecurePageComponent;
+import com.models.ReservationModel;
 import com.models.UserModel;
+import com.presenter.ReservationListPresenter;
+import com.presenter.ReservationPresenter;
 import com.presenter.UserListPresenter;
 import com.presenter.UserPresenter;
 import com.vaadin.navigator.View;
@@ -17,12 +20,15 @@ import java.util.List;
 public class MainViewImpl extends SecurePageComponent implements View, MainView, Button.ClickListener {
 
     private UserModel user = new UserModel();
+    private ReservationModel reservation = new ReservationModel();
 
     private static final String[] VIEWS = new String[] {
         RentalTool.HOME,
         RentalTool.CREATE_USER,
         RentalTool.LIST_USERS,
         RentalTool.LOGIN,
+        RentalTool.CREATE_RESERVATION,
+        RentalTool.LIST_RESERVATION
     };
 
     /**
@@ -36,6 +42,7 @@ public class MainViewImpl extends SecurePageComponent implements View, MainView,
         checkAccess();
 
         this.user = new UserModel();
+        this.reservation = new ReservationModel();
 
         String viewName = RentalTool.HOME;
         Integer id = null;
@@ -113,6 +120,29 @@ public class MainViewImpl extends SecurePageComponent implements View, MainView,
                 userList.setWidth("100%");
                 layout.addComponent(userList);
                 layout.setExpandRatio(userList, 1.0f);
+                break;
+            case RentalTool.CREATE_RESERVATION:
+                if (viewId != null) {
+                    this.reservation = this.reservation.getReservation(viewId);
+                }
+                ReservationFormViewImpl reservationForm = new ReservationFormViewImpl(this.reservation);
+                UserFormViewImpl main = new UserFormViewImpl(this.user);
+                new UserPresenter(this.user, main);
+                new ReservationPresenter(this.reservation, reservationForm);
+                reservationForm.setSizeFull();
+                reservationForm.setWidth("100%");
+                layout.addComponent(reservationForm);
+                layout.setExpandRatio(reservationForm, 1.0f);
+                break;
+            case RentalTool.LIST_RESERVATION:
+                ReservationListViewImpl reservationList = new ReservationListViewImpl();
+                UserFormViewImpl main2 = new UserFormViewImpl(this.user);
+                new UserPresenter(this.user, main2);
+                new ReservationListPresenter(this.reservation, reservationList);
+                reservationList.setSizeFull();
+                reservationList.setWidth("100%");
+                layout.addComponent(reservationList);
+                layout.setExpandRatio(reservationList, 1.0f);
                 break;
         }
 

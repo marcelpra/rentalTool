@@ -16,6 +16,8 @@ public class RentalTool extends UI {
     public static final String HOME = "main";
     public static final String CREATE_USER = "User";
     public static final String LIST_USERS = "Users";
+    public static final String CREATE_RESERVATION = "Reservation";
+    public static final String LIST_RESERVATION = "Reservations";
 
     @Override
     public void init(VaadinRequest request) {

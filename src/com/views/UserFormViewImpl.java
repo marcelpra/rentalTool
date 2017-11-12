@@ -1,5 +1,4 @@
 package com.views;
-
 import com.SecurePageComponent;
 import com.models.UserModel;
 import com.vaadin.data.*;
@@ -28,6 +27,9 @@ public class UserFormViewImpl extends SecurePageComponent implements UserFormVie
     private ComboBox<String> userroleField = new ComboBox<>("Select User-Role");
 
     public UserFormViewImpl(UserModel user) {
+
+        System.out.println("constructor enter");
+
         this.user = user;
 
         // creating layout
@@ -119,39 +121,27 @@ public class UserFormViewImpl extends SecurePageComponent implements UserFormVie
         // bind form to userModel
         Binder<UserModel> binder = new Binder<>();
         binder.forField(emailField)
-                .asRequired("Email required")
                 .withValidator(new EmailValidator("invalid email"))
                 .bind(UserModel::getEmail, UserModel::setEmail);
         binder.forField(firstnameField)
-                .asRequired("Forename required")
                 .bind(UserModel::getFirstname, UserModel::setFirstname);
         binder.forField(lastnameField)
-                .asRequired("Lastname required")
                 .bind(UserModel::getLastname, UserModel::setLastname);
         binder.forField(departmentField)
-                .asRequired("Department required")
                 .bind(UserModel::getDepartment, UserModel::setDepartment);
         binder.forField(userroleField)
-                .asRequired("User Role must be selected")
                 .bind(UserModel::getUserRole, UserModel::setUserRole);
         binder.forField(statusField)
-                .asRequired("status must be selected")
                 .bind(UserModel::getStatus, UserModel::setStatus);
         binder.setBean(user);
 
         // adding button with form validation
-        binder.readBean(user);
         Button createButton = new Button("",
                 event -> {
                     // reset error and success messages
                     errorMsg.setVisible(false);
                     successMsg.setVisible(false);
-                    try {
-                        binder.writeBean(user);
-                        buttonClick(event);
-                    } catch (ValidationException e) {
-                        setErrorMsg("User could not be saved, please check required fields.");
-                    }
+                    buttonClick(event);
                 });
         createButton.setStyleName("primary align-center");
         createButton.setWidth(100, Unit.PERCENTAGE);
@@ -192,6 +182,6 @@ public class UserFormViewImpl extends SecurePageComponent implements UserFormVie
     @Override
     public void buttonClick(Button.ClickEvent event) {
         for (UserViewListener listener: listeners)
-            listener.buttonClick(this.user);
+            listener.buttonClick(user);
     }
 }
