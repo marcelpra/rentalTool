@@ -17,6 +17,9 @@ public class SecurePageComponent extends CustomComponent implements View {
         checkAccess();
     }
 
+    /**
+     * Method that checks if the current User has valid access token
+     */
     protected void checkAccess() {
         // get user id and token from session
         VaadinSession session = getSession();
@@ -24,12 +27,9 @@ public class SecurePageComponent extends CustomComponent implements View {
         Integer userId = (Integer)session.getAttribute("userID");
         String accessToken = String.valueOf(session.getAttribute("accessToken"));
 
-
         if (userId == null || accessToken == null) {
             System.out.println("empty userId or token");
-            // TODO we should remove all Secured views from navigation
-            // UI.getCurrent().getNavigator().removeView("createUser");
-            UI.getCurrent().getNavigator().navigateTo(RentalTool.HOME);
+            UI.getCurrent().getNavigator().navigateTo(RentalTool.LOGIN);
             return;
         }
 
@@ -37,7 +37,7 @@ public class SecurePageComponent extends CustomComponent implements View {
         Boolean validate = user.validateSession(userId, accessToken);
         if (!validate) {
             System.out.println("access token expired");
-            UI.getCurrent().getNavigator().navigateTo(RentalTool.HOME);
+            UI.getCurrent().getNavigator().navigateTo(RentalTool.LOGIN);
         }
     }
 }

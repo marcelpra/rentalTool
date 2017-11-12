@@ -1,9 +1,9 @@
 package com.views;
+
 import com.SecurePageComponent;
 import com.models.UserModel;
 import com.vaadin.data.*;
 import com.vaadin.data.validator.EmailValidator;
-import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.ui.*;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Label;
@@ -18,42 +18,17 @@ public class UserFormViewImpl extends SecurePageComponent implements UserFormVie
     private Label successMsg = new Label("");
 
     private TextField emailField = new TextField("Email");
-    private TextField passwordField = new PasswordField("Password");
     private TextField firstnameField = new TextField("Firstname");
     private TextField lastnameField = new TextField("Lastname");
     private TextField departmentField = new TextField("Department");
 
     private UserModel user = new UserModel();
 
-    private ComboBox<String> statusField = new ComboBox<>("Status");
+    private ComboBox<Boolean> statusField = new ComboBox<>("Status");
     private ComboBox<String> userroleField = new ComboBox<>("Select User-Role");
 
-    /**
-     * Sets initial data to view when it will change
-     *
-     * @param event the ViewChange event
-     */
-    public void enter(ViewChangeListener.ViewChangeEvent event) {
-
-        // check access
-        checkAccess();
-
-        Boolean isParam = false;
-
-        // check url params
-        if(event.getParameters() != null){
-            String[] msgs = event.getParameters().split("/");
-            for (String msg : msgs) {
-                if (msg != null && !msg.trim().isEmpty()) {
-                    this.user = this.user.getUser(Integer.valueOf(msg));
-                    isParam = true;
-                }
-            }
-        }
-
-        if(!isParam) {
-            this.user = new UserModel();
-        }
+    public UserFormViewImpl(UserModel user) {
+        this.user = user;
 
         // creating layout
         HorizontalLayout layout = new HorizontalLayout();
@@ -104,13 +79,23 @@ public class UserFormViewImpl extends SecurePageComponent implements UserFormVie
 
         // do some styling to fields
         emailField.setWidth(100, Unit.PERCENTAGE);
-        passwordField.setWidth(100, Unit.PERCENTAGE);
         firstnameField.setWidth(100, Unit.PERCENTAGE);
         lastnameField.setWidth(100, Unit.PERCENTAGE);
         departmentField.setWidth(100, Unit.PERCENTAGE);
         statusField.setWidth(100, Unit.PERCENTAGE);
         statusField.setEmptySelectionAllowed(false);
-        statusField.setItems("active", "inactive");
+        statusField.setItemCaptionGenerator(new ItemCaptionGenerator<Boolean>() {
+            @Override
+            public String apply(Boolean aBoolean) {
+                return aBoolean ? "active" : "inactive";
+            }
+        });
+
+        List<Boolean> statusSelect = new ArrayList<>();
+        statusSelect.add(0, true);
+        statusSelect.add(1, false);
+
+        statusField.setItems(statusSelect);
         userroleField.setWidth(100, Unit.PERCENTAGE);
         userroleField.setEmptySelectionAllowed(false);
         userroleField.setEmptySelectionCaption("please select");
@@ -146,12 +131,12 @@ public class UserFormViewImpl extends SecurePageComponent implements UserFormVie
         binder.forField(departmentField)
                 .asRequired("Department required")
                 .bind(UserModel::getDepartment, UserModel::setDepartment);
-        binder.forField(passwordField)
-                .asRequired("Password required")
-                .bind(UserModel::getPassword, UserModel::setPassword);
         binder.forField(userroleField)
                 .asRequired("User Role must be selected")
                 .bind(UserModel::getUserRole, UserModel::setUserRole);
+        binder.forField(statusField)
+                .asRequired("status must be selected")
+                .bind(UserModel::getStatus, UserModel::setStatus);
         binder.setBean(user);
 
         // adding button with form validation
@@ -173,12 +158,12 @@ public class UserFormViewImpl extends SecurePageComponent implements UserFormVie
 
         // set correct captures
         if (user.getUserID() != null) {
-            header.setValue("Update User");
+            header.setValue("Update User with ID: " + user.getUserID().toString());
             createButton.setCaption("Update User");
         } else {
             createButton.setCaption("Create User");
             header.setValue("Create new User");
-            statusField.setValue("active");
+            statusField.setValue(true);
         }
 
         // add all components to form
@@ -190,14 +175,13 @@ public class UserFormViewImpl extends SecurePageComponent implements UserFormVie
                 firstnameField,
                 lastnameField,
                 departmentField,
-                passwordField,
                 statusField,
                 userroleField,
                 createButton
         );
-        form.setComponentAlignment(header, Alignment.MIDDLE_CENTER);
+        form.setComponentAlignment(header, Alignment.TOP_CENTER);
         layout.addComponent(form);
-        layout.setComponentAlignment(form, Alignment.MIDDLE_CENTER);
+        layout.setComponentAlignment(form, Alignment.TOP_CENTER);
     }
 
     List<UserViewListener> listeners = new ArrayList<UserViewListener>();

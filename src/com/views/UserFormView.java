@@ -10,9 +10,7 @@ public interface UserFormView extends View {
     public void setSuccessMsg (String value);
 
     interface UserViewListener {
-        void buttonClick(
-            UserModel userModel
-        );
+        void buttonClick(UserModel userModel);
     }
     public void addListener (UserFormView.UserViewListener listener);
 }

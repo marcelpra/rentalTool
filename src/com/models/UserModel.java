@@ -1,25 +1,28 @@
 package com.models;
 
 import com.dbConnector.dbConnector;
+import com.google.gwt.core.ext.typeinfo.NotFoundException;
 import com.vaadin.server.VaadinSession;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.*;
 import java.sql.Date;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class UserModel {
 
-    private Integer userID;
+    private Integer userID = null;
     private String email;
     private String firstname;
     private String lastname;
     private String department;
     private String password;
     private String userRole;
+
+    private Boolean status;
+
     private Date createdTimestamp;
     private String accessToken;
     private Timestamp expiry;
@@ -27,9 +30,11 @@ public class UserModel {
     private String errorMsg = "";
     private String successMsg = "";
 
-    private static final Integer LOGIN_EXPIRYY = 30;
+    public static final String ROLE_ADMIN = "Admin";
+    public static final String ROLE_EMPLOYEE = "Employee";
+    public static final String ROLE_USER = "User";
 
-    private static Integer workload = 12;
+    private static final Integer LOGIN_EXPIRYY = 30;
 
     /**
      * Method to create a new User
@@ -40,28 +45,31 @@ public class UserModel {
     public boolean createUser(UserModel userModel) {
         Connection connection = null;
         int countRow = 0;
+        final String tempPassword = RandomStringUtils.randomAlphanumeric(6);
+
+        // only allow admins to create user
+        if (!validateAccessControl(ROLE_ADMIN)) {
+            this.errorMsg = "not allowed to create user";
+            return false;
+        }
+
         try {
             // get connection
             connection = dbConnector.getConnection();
 
+            userModel.password = hashPassword(tempPassword);
             // prepare and build sql insert query
-            String sql = "INSERT INTO user (email, firstname, lastname, department, user_role, password) " +
-                    "VALUES (?, ?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO user (email, firstname, lastname, department, user_role, status_active, password) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement stmt = connection.prepareStatement(sql);
             stmt.setString(1, userModel.email);
             stmt.setString(2, userModel.firstname);
             stmt.setString(3, userModel.lastname);
             stmt.setString(4, userModel.department);
             stmt.setString(5, userModel.userRole);
-            stmt.setString(6, userModel.password);
+            stmt.setBoolean(6, userModel.status);
+            stmt.setString(7, userModel.password);
             countRow = stmt.executeUpdate();
-
-            // check result
-            if (countRow > 0) {
-                this.successMsg = "user created successful";
-            } else {
-                this.errorMsg = "user creating not successful";
-            }
         } catch (Exception e) {
             this.errorMsg = "user creating not successful";
             e.printStackTrace();
@@ -71,7 +79,7 @@ public class UserModel {
 
         // check result
         if (countRow > 0) {
-            this.successMsg = "user successfully created";
+            this.successMsg = "user successfully created with Password: " + tempPassword;
             return true;
         } else {
             this.errorMsg = "creating user not successful";
@@ -88,13 +96,21 @@ public class UserModel {
     public boolean updateUser(UserModel userModel) {
         Connection connection = null;
         int countRow = 0;
+
+        // only allow Admins to update different User then the own
+        String sessionUser = String.valueOf(VaadinSession.getCurrent().getAttribute("userID"));
+        if (!validateAccessControl(ROLE_ADMIN) && !sessionUser.equals(userModel.getUserID().toString())) {
+            this.errorMsg = "not allowed to update this user";
+            return false;
+        }
+
         try {
             // get connection
             connection = dbConnector.getConnection();
 
             // prepare and build sql update query
             String sql = "UPDATE user SET email = ?, firstname = ?, lastname = ?, department = ?, user_role = ?, " +
-                    "access_token = ?, expiry = ? " +
+                    "status_active = ?, access_token = ?, expiry = ? " +
                     "WHERE user_ID = ?";
             PreparedStatement stmt = connection.prepareStatement(sql);
             stmt.setString(1, userModel.email);
@@ -102,11 +118,10 @@ public class UserModel {
             stmt.setString(3, userModel.lastname);
             stmt.setString(4, userModel.department);
             stmt.setString(5, userModel.userRole);
-            stmt.setString(6, userModel.accessToken);
-            stmt.setTimestamp(7, userModel.expiry);
-            stmt.setInt(8, userModel.userID);
-            // TODO don't update password with this method as we do not know if it is already hashed or not
-            // stmt.setString(6, userModel.password);
+            stmt.setBoolean(6, userModel.status);
+            stmt.setString(7, userModel.accessToken);
+            stmt.setTimestamp(8, userModel.expiry);
+            stmt.setInt(9, userModel.userID);
 
             countRow = stmt.executeUpdate();
         } catch (Exception e) {
@@ -166,25 +181,60 @@ public class UserModel {
         return true;
     }
 
+    /**
+     * Method that validates if current access token for user id is valid
+     *
+     * @param userId the userId from Session
+     * @param accessToken the accessToken from Session
+     * @return Boolean true - if valid, false if not valid
+     */
     public Boolean validateSession(Integer userId, String accessToken) {
         UserModel user = queryUser("access_token", accessToken);
 
         // get current timestamp
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         // check userId and expiry
-        if (!user.userID.equals(userId) || !user.expiry.after(timestamp)) {
+        return user.userID.equals(userId) && user.expiry.after(timestamp);
+    }
+
+    /**
+     * Method that validates if current user has required UserRole
+     *
+     * @param requiredUserRole the userRole we require to be checked
+     * @return Boolean true - if saved userRole matches required Role, false - if not
+     */
+    public static Boolean validateAccessControl(String requiredUserRole) {
+        String userId = String.valueOf(VaadinSession.getCurrent().getAttribute("userID"));
+        String accessToken = String.valueOf(VaadinSession.getCurrent().getAttribute("accessToken"));
+
+        UserModel user = new UserModel();
+        user = user.queryUser("access_token", accessToken);
+        if (user.getUserID() == null) {
             return false;
-        } else {
-            return true;
         }
+
+        // get current timestamp
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+
+        // check userId, expiry and required userRole
+        return user.getUserID().equals(Integer.valueOf(userId)) && user.getExpiry().after(timestamp) && user.getUserRole().equals(requiredUserRole);
     }
 
+    /**
+     * Method that searches for a user by userID
+     *
+     * @param userID the id of the user
+     * @return UserModel user
+     */
     public UserModel getUser(Integer userID) {
-        UserModel user = queryUser("user_ID", userID.toString());
-        System.out.println(user.getEmail());
-        return user;
+        return queryUser("user_ID", userID.toString());
     }
 
+    /**
+     * Method that gets all Users saved in DB-table
+     *
+     * @return List of UserModels
+     */
     public static List<UserModel> getUsers() {
         ArrayList<UserModel> resultData = new ArrayList<>();
         Connection connection = null;
@@ -195,7 +245,17 @@ public class UserModel {
 
             // prepare and build sql update query
             String sql = "SELECT * FROM user";
-            PreparedStatement stmt = connection.prepareStatement(sql);
+            PreparedStatement stmt;
+
+            // only allow admins to see all Users
+            if (!validateAccessControl(ROLE_ADMIN)) {
+                sql = sql + " WHERE user_ID = ?";
+                stmt = connection.prepareStatement(sql);
+                stmt.setString(1, String.valueOf(VaadinSession.getCurrent().getAttribute("userID")));
+            } else {
+                stmt = connection.prepareStatement(sql);
+            }
+
             ResultSet result = stmt.executeQuery();
 
             resultData = setResultData(result, resultData);
@@ -208,6 +268,127 @@ public class UserModel {
         return resultData;
     }
 
+    /**
+     * Method that creates additional condition for a DB-Query for defined userRoles
+     *
+     * @return String with additional condition for a query
+     * @throws NotFoundException if user was not found
+     */
+    private String accessControl() throws NotFoundException {
+        String userId = String.valueOf(VaadinSession.getCurrent().getAttribute("userID"));
+
+        String queryCondition = "";
+        UserModel user = new UserModel();
+        user = user.queryUser("user_ID", userId);
+        if (user.getUserID() == null) {
+            throw new NotFoundException("User not found");
+        }
+
+        if (!user.getUserRole().equals(ROLE_ADMIN)) {
+            queryCondition = " AND user_ID = " + user.getUserID().toString();
+        }
+
+        return queryCondition;
+    }
+
+    /**
+     * Validates given password with stored password
+     *
+     * @param userPassword   the given user password
+     * @param storedPassword the stored user password
+     * @return Boolean
+     */
+    private static Boolean checkPassword(String userPassword, String storedPassword) {
+        return BCrypt.checkpw(userPassword, storedPassword);
+    }
+
+    /**
+     * Binds query result to userModel
+     *
+     * @param result      the query result
+     * @param returnValue the array list where we pass the result to
+     * @return ArrayList
+     */
+    private static ArrayList setResultData(ResultSet result, ArrayList<UserModel> returnValue) {
+        try {
+            while (result.next()) {
+                UserModel user = new UserModel();
+                user.setUserID(result.getInt("user_ID"));
+                user.setEmail(result.getString("email"));
+                user.setFirstname(result.getString("firstname"));
+                user.setLastname(result.getString("lastname"));
+                user.setDepartment(result.getString("department"));
+                user.setUserRole(result.getString("user_role"));
+                user.setStatus(result.getBoolean("status_active"));
+                user.password = result.getString("password");
+                user.accessToken = result.getString("access_token");
+                user.expiry = result.getTimestamp("expiry");
+                returnValue.add(user);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return returnValue;
+    }
+
+    /**
+     * General method to query for a single user by specific field
+     *
+     * @param searchField    the column of database table to search for argument
+     * @param searchArgument the criteria for the search
+     * @return UserModel
+     */
+    private UserModel queryUser(String searchField, String searchArgument) {
+        Connection connection = null;
+        ArrayList<UserModel> resultData = new ArrayList<>();
+
+        try {
+            // get connection
+            connection = dbConnector.getConnection();
+
+            // prepare and build sql update query
+            String sql = "SELECT * FROM user WHERE " + searchField.toString() + " = ? LIMIT 1";
+
+            // add access control condition to query
+            sql = sql + accessControl();
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setString(1, searchArgument);
+            ResultSet result = stmt.executeQuery();
+
+            resultData = setResultData(result, resultData);
+        } catch (Exception e) {
+            this.errorMsg = "query not successful";
+            e.printStackTrace();
+        } finally {
+            dbConnector.closeConnection(connection);
+        }
+
+        // add error msg and empty model if empty result
+        if (resultData.isEmpty()) {
+            this.errorMsg = "user not found";
+            resultData.add(0, new UserModel());
+        }
+        return resultData.get(0);
+    }
+
+    /**
+     * Function that hashes a given string
+     *
+     * @param plaintextPassword the given plaintext password
+     * @return String
+     */
+    private static String hashPassword(String plaintextPassword) {
+        Integer workload = 12;
+        String salt = BCrypt.gensalt(workload);
+        return BCrypt.hashpw(plaintextPassword, salt);
+    }
+
+    /**
+     * GETTERS / SETTERS
+     *
+     */
     public String getErrorMsg() {
         return errorMsg;
     }
@@ -272,6 +453,14 @@ public class UserModel {
         this.userRole = userRole;
     }
 
+    public void setStatus(Boolean status) {
+        this.status = status;
+    }
+
+    public Boolean getStatus() {
+        return status;
+    }
+
     public Date getCreatedTimestamp() {
         return createdTimestamp;
     }
@@ -294,92 +483,5 @@ public class UserModel {
 
     public void setExpiry(Timestamp expiry) {
         this.expiry = expiry;
-    }
-
-    /**
-     * Function that hashes a given string
-     *
-     * @param plaintextPassword the given plaintext password
-     * @return String
-     */
-    private static String hashPassword(String plaintextPassword) {
-        String salt = BCrypt.gensalt(workload);
-        return BCrypt.hashpw(plaintextPassword, salt);
-    }
-
-    /**
-     * Validates given password with stored password
-     *
-     * @param userPassword the given user password
-     * @param storedPassword the stored user password
-     * @return Boolean
-     */
-    private static Boolean checkPassword(String userPassword, String storedPassword) {
-        return BCrypt.checkpw(userPassword, storedPassword);
-    }
-
-    /**
-     * Binds query result to userModel
-     *
-     * @param result the query result
-     * @param returnValue the array list where we pass the result to
-     * @return ArrayList
-     */
-    private static ArrayList setResultData(ResultSet result, ArrayList<UserModel> returnValue) {
-        try {
-            while (result.next()) {
-                UserModel user = new UserModel();
-                user.setUserID(result.getInt("user_ID"));
-                user.setEmail(result.getString("email"));
-                user.setFirstname(result.getString("firstname"));
-                user.setLastname(result.getString("lastname"));
-                user.setDepartment(result.getString("department"));
-                user.setUserRole(result.getString("user_role"));
-                user.password = result.getString("password");
-                user.accessToken = result.getString("access_token");
-                user.expiry = result.getTimestamp("expiry");
-                returnValue.add(user);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return returnValue;
-    }
-
-    /**
-     * General method to query for a single user by specific field
-     *
-     * @param searchField the column of database table to search for argument
-     * @param searchArgument the criteria for the search
-     * @return UserModel
-     */
-    private UserModel queryUser(String searchField, String searchArgument) {
-        Connection connection = null;
-        ArrayList<UserModel> resultData = new ArrayList<>();
-        try {
-            // get connection
-            connection = dbConnector.getConnection();
-
-            // prepare and build sql update query
-            String sql = "SELECT * FROM user WHERE " + searchField.toString() + " = ? LIMIT 1";
-            PreparedStatement stmt = connection.prepareStatement(sql);
-            stmt.setString(1, searchArgument);
-            ResultSet result = stmt.executeQuery();
-
-            resultData = setResultData(result, resultData);
-        } catch (Exception e) {
-            this.errorMsg = "query not successful";
-            e.printStackTrace();
-        } finally {
-            dbConnector.closeConnection(connection);
-        }
-
-        // add error msg and empty model if empty result
-        if (resultData.isEmpty()) {
-            this.errorMsg = "user not found";
-            resultData.add(0, new UserModel());
-        }
-        return resultData.get(0);
     }
 }

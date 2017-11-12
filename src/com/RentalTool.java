@@ -2,46 +2,36 @@ package com;
 
 import com.models.UserModel;
 import com.presenter.LoginPresenter;
-import com.presenter.UserListPresenter;
-import com.presenter.UserPresenter;
+import com.vaadin.annotations.Theme;
 import com.vaadin.navigator.Navigator;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.*;
-import com.views.UserFormViewImpl;
-import com.views.ListUserViewImpl;
+import com.views.MainViewImpl;
 import com.views.LoginViewImpl;
 
+@Theme("valo")
 public class RentalTool extends UI {
 
     public static final String LOGIN = "login";
-    public static final String HOME = "";
-    public static final String CREATE_USER = "createUser";
-    public static final String LIST_USERS = "listUsers";
+    public static final String HOME = "main";
+    public static final String CREATE_USER = "User";
+    public static final String LIST_USERS = "Users";
 
     @Override
     public void init(VaadinRequest request) {
 
-        String msgs = request.getParameter("14");
-        System.out.println(msgs);
-
         Navigator navigator = new Navigator(this, this);
 
-        // load models
+        MainViewImpl mainView = new MainViewImpl();
+        LoginViewImpl loginView = new LoginViewImpl();
+
         UserModel userModel = new UserModel();
 
-        // load views
-        LoginViewImpl loginView = new LoginViewImpl();
-        UserFormViewImpl createUserView = new UserFormViewImpl();
-        ListUserViewImpl listUserView = new ListUserViewImpl();
-
-        // TODO think about a ChangeUserView as we could use it for updating and creating an User
-        // load presenter classes
         new LoginPresenter(userModel, loginView);
-        new UserPresenter(userModel, createUserView);
-        new UserListPresenter(userModel, listUserView);
+        // TODO add mainPresenter
 
-        navigator.addView(HOME, loginView);
-        navigator.addView(CREATE_USER,  createUserView);
-        navigator.addView(LIST_USERS, listUserView);
+        navigator.addView(HOME, mainView);
+        navigator.addView(LOGIN, loginView);
+        navigator.addView("", loginView);
     }
 }

@@ -2,6 +2,7 @@ package com.views;
 
 import com.vaadin.navigator.View;
 import com.vaadin.ui.*;
+import com.vaadin.ui.themes.ValoTheme;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +29,7 @@ public class LoginViewImpl extends CustomComponent implements View, LoginView, B
         passwordLabel.setWidth("100%");
 
         Button loginButton = new Button("Login", this);
-        loginButton.setStyleName("primary align-center");
+        loginButton.setStyleName(ValoTheme.BUTTON_PRIMARY);
         loginButton.setWidth(100, Unit.PERCENTAGE);
 
         usernameField.setWidth(100, Unit.PERCENTAGE);
