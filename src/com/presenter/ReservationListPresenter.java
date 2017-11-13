@@ -6,8 +6,10 @@ import com.models.UserModel;
 import com.vaadin.data.provider.ListDataProvider;
 import com.vaadin.ui.*;
 import com.vaadin.ui.components.grid.HeaderRow;
+import com.views.ReservationFormView;
 import com.views.ReservationListView;
 import com.views.UserListView;
+import org.apache.regexp.RE;
 
 
 public class ReservationListPresenter implements ReservationListView.ReservationListViewListener {
@@ -40,7 +42,7 @@ public class ReservationListPresenter implements ReservationListView.Reservation
     @Override
     public void filter (Grid grid) {
         final HeaderRow filterRow = grid.getHeaderRow(1);
-        final ListDataProvider<UserModel> dataProvider = (ListDataProvider<UserModel>) grid.getDataProvider();
+        final ListDataProvider<ReservationModel> dataProvider = (ListDataProvider<ReservationModel>) grid.getDataProvider();
 
         // reset filter
         dataProvider.setFilter(s -> true);
@@ -51,40 +53,38 @@ public class ReservationListPresenter implements ReservationListView.Reservation
                 case "ID":
                     TextField id = (TextField) column;
                     System.out.println(column.getId() + "value: " + id.getValue());
-                    dataProvider.addFilter(UserModel::getUserID, s -> s.toString().contains(id.getValue()));
+                    dataProvider.addFilter(ReservationModel::getReservationId, s -> s.toString().contains(id.getValue()));
                     break;
-                case "Email":
-                    TextField email = (TextField) column;
-                    System.out.println(column.getId() + "value: " + email.getValue());
-                    dataProvider.addFilter(UserModel::getEmail, s -> s.contains(email.getValue()));
-                    break;
-                case "Firstname":
-                    TextField firstName = (TextField) column;
-                    System.out.println(column.getId() + "value: " + firstName.getValue());
-                    dataProvider.addFilter(UserModel::getFirstname, s -> s.contains(firstName.getValue()));
-                    break;
-                case "Lastname":
-                    TextField lastName = (TextField) column;
-                    System.out.println(column.getId() + "value: " + lastName.getValue());
-                    dataProvider.addFilter(UserModel::getLastname, s -> s.contains(lastName.getValue()));
-                    break;
-                case "Department":
-                    TextField department = (TextField) column;
-                    System.out.println(column.getId() + "value: " + department.getValue());
-                    dataProvider.addFilter(UserModel::getDepartment, s -> s.contains(department.getValue()));
-                    break;
-                case "User-Role":
-                    ComboBox userRole = (ComboBox) column;
-                    System.out.println(column.getId() + "value: " + userRole.getValue());
-                    if (userRole.getValue() != null) {
-                        dataProvider.addFilter(UserModel::getUserRole, s -> s.equals(userRole.getValue()));
+                case "from":
+                    DateField dateFrom = (DateField) column;
+                    System.out.println(column.getId() + "value: " + dateFrom.getValue());
+                    if (dateFrom.getValue() == null) {
+                        break;
                     }
+                    dataProvider.addFilter(ReservationModel::getDateFrom, s -> s.isAfter(dateFrom.getValue()));
+                    break;
+                case "to":
+                    DateField dateTo = (DateField) column;
+                    System.out.println(column.getId() + "value: " + dateTo.getValue());
+                    if (dateTo.getValue() == null) {
+                        break;
+                    }
+                    dataProvider.addFilter(ReservationModel::getDateTo, s -> s.isBefore(dateTo.getValue()));
+                    break;
+                case "gadgets":
+                    TextField gadgets = (TextField) column;
+                    System.out.println(column.getId() + "value: " + gadgets.getValue());
+                    if (gadgets.getValue() == null || gadgets.getValue().isEmpty()) {
+                        break;
+                    }
+                    // TODO split by comma and add value of with 'and' to filter
+                    dataProvider.addFilter(ReservationModel::getGadgets, s -> s.contains(Integer.valueOf(gadgets.getValue())));
                     break;
                 case "Status":
                     ComboBox status = (ComboBox) column;
                     System.out.println(column.getId() + "value: " + status.getValue());
                     if (status.getValue() != null) {
-                        dataProvider.addFilter(UserModel::getStatus, s -> s.equals(status.getValue()));
+                        dataProvider.addFilter(ReservationModel::getStatus, s -> s.equals(status.getValue()));
                     }
                     break;
             }

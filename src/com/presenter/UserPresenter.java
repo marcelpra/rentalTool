@@ -21,9 +21,9 @@ public class UserPresenter implements UserFormView.UserViewListener {
 
         // update or create user
         if (userModel.getUserID() != null) {
-            ok = model.updateUser(userModel);
+            ok = userModel.updateUser();
         } else {
-            ok = model.createUser(userModel);
+            ok = userModel.createUser();
         }
 
         // get error and success message to display them in view

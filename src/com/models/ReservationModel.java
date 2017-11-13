@@ -21,13 +21,41 @@ public class ReservationModel {
     private String errorMsg = "";
     private String successMsg = "";
 
+    private Boolean validate() {
+        if (dateFrom == null) {
+            errorMsg = "Date from not set";
+            return false;
+        }
+        if (dateTo == null) {
+            errorMsg = "Date to not set";
+            return false;
+        }
+        if (dateFrom.isAfter(dateTo)) {
+            errorMsg = "Invalid reservation period";
+            return false;
+        }
+        if (gadgets == null || gadgets.isEmpty()) {
+            errorMsg = "No Gadget selected";
+            return false;
+        }
+        if (status == null) {
+            errorMsg = "Status not set";
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Method to create a new User
      *
-     * @param reservationModel the userModel to be saved in database
      * @return Boolean
      */
-    public boolean createReservation(ReservationModel reservationModel) {
+    public boolean createReservation() {
+
+        if (!validate()) {
+            return false;
+        }
+
         Connection connection = null;
         int countRow = 0;
         try {
@@ -41,11 +69,11 @@ public class ReservationModel {
             String sql = "INSERT INTO reservation (date_from, date_to, gadgets, user_ID, status_active) " +
                     "VALUES (?, ?, ?, ?, ?)";
             PreparedStatement stmt = connection.prepareStatement(sql);
-            stmt.setObject(1, reservationModel.dateFrom);
-            stmt.setObject(2, reservationModel.dateTo);
-            stmt.setString(3, prepareGadgetString(reservationModel.gadgets));
+            stmt.setObject(1, dateFrom);
+            stmt.setObject(2, dateTo);
+            stmt.setString(3, prepareGadgetString(gadgets));
             stmt.setInt(4, Integer.valueOf(userId));
-            stmt.setBoolean(5, reservationModel.status);
+            stmt.setBoolean(5, status);
             countRow = stmt.executeUpdate();
         } catch (Exception e) {
             this.errorMsg = "user creating not successful";
@@ -67,10 +95,14 @@ public class ReservationModel {
     /**
      * Method to update a Reservation
      *
-     * @param reservationModel the reservationModel to be saved in database
      * @return Boolean
      */
-    public boolean updateReservation(ReservationModel reservationModel) {
+    public boolean updateReservation() {
+
+        if (!validate()) {
+            return false;
+        }
+
         Connection connection = null;
         int countRow = 0;
 
@@ -90,11 +122,11 @@ public class ReservationModel {
             String sql = "UPDATE reservation SET date_from = ?, date_to = ?, gadgets = ?, status_active = ? " +
                     "WHERE reservation_ID = ?";
             PreparedStatement stmt = connection.prepareStatement(sql);
-            stmt.setObject(1, reservationModel.dateFrom);
-            stmt.setObject(2, reservationModel.dateTo);
-            stmt.setString(3, prepareGadgetString(reservationModel.gadgets));
-            stmt.setBoolean(4, reservationModel.getStatus());
-            stmt.setInt(5, reservationModel.getReservationId());
+            stmt.setObject(1, dateFrom);
+            stmt.setObject(2, dateTo);
+            stmt.setString(3, prepareGadgetString(gadgets));
+            stmt.setBoolean(4, getStatus());
+            stmt.setInt(5, getReservationId());
 
             countRow = stmt.executeUpdate();
         } catch (Exception e) {

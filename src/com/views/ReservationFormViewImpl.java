@@ -139,44 +139,20 @@ public class ReservationFormViewImpl extends SecurePageComponent implements Rese
         // bind form to userModel
         Binder<ReservationModel> binder = new Binder<>();
         binder.forField(dateFromField)
-                .asRequired("Date from required")
-                .withValidator(dateFromField.getDefaultValidator())
                 .bind(ReservationModel::getDateFrom, ReservationModel::setDateFrom);
         binder.forField(dateToField)
-                .asRequired("Date from required")
-                .withValidator(dateFromField.getDefaultValidator())
                 .bind(ReservationModel::getDateTo, ReservationModel::setDateTo);
         binder.forField(statusField)
-                .asRequired("status must be selected")
                 .bind(ReservationModel::getStatus, ReservationModel::setStatus);
         binder.setBean(reservation);
 
         // adding button with form validation
-        binder.readBean(reservation);
         Button createButton = new Button("",
                 event -> {
                     // reset error and success messages
                     errorMsg.setVisible(false);
                     successMsg.setVisible(false);
-
-                    if (reservation.getGadgets().isEmpty()) {
-                        setErrorMsg("No Gadgets selected");
-                        return;
-                    }
-                    if (reservation.getDateTo() == null || reservation.getDateFrom() == null) {
-                        setErrorMsg("From and To Date required");
-                        return;
-                    }
-                    if (reservation.getDateTo().isBefore(reservation.getDateFrom())) {
-                        setErrorMsg("Invalid Date Range");
-                        return;
-                    }
-                    try {
-                        binder.writeBean(reservation);
-                        buttonClick(event);
-                    } catch (ValidationException e) {
-                        setErrorMsg("Reservation could not be saved, please check required fields.");
-                    }
+                    buttonClick(event);
                 });
         createButton.setStyleName("primary align-center");
         createButton.setWidth(100, Unit.PERCENTAGE);

@@ -55,7 +55,7 @@ public class ReservationListViewImpl extends CustomComponent implements View, Re
                 activeLabel.addStyleName(ValoTheme.LABEL_SUCCESS);
 
             } else {
-                activeLabel.setValue("inactive");
+                activeLabel.setValue("cancelled");
                 activeLabel.addStyleName(ValoTheme.LABEL_FAILURE);
                 activeLabel.addStyleName(ValoTheme.LABEL_NO_MARGIN);
             }
@@ -86,11 +86,11 @@ public class ReservationListViewImpl extends CustomComponent implements View, Re
         Header.Row.Cell cell = (Header.Row.Cell) headerRow.getCell("ID");
         cell.setComponent(filterField("ID"));
         cell = (Header.Row.Cell) headerRow.getCell("from");
-        cell.setComponent(filterField("from"));
+        cell.setComponent(filterDateField("from"));
         cell = (Header.Row.Cell) headerRow.getCell("Edit");
         cell.setComponent(createReservation());
         cell = (Header.Row.Cell) headerRow.getCell("to");
-        cell.setComponent(filterField("to"));
+        cell.setComponent(filterDateField("to"));
         cell = (Header.Row.Cell) headerRow.getCell("gadgets");
         cell.setComponent(filterField("gadgets"));
         cell = (Header.Row.Cell) headerRow.getCell("Status");
@@ -131,18 +131,6 @@ public class ReservationListViewImpl extends CustomComponent implements View, Re
                 statusField.setPlaceholder(id);
                 statusField.setId(id);
                 return statusField;
-            case "User-Role":
-                ComboBox<String> userRoleField = new ComboBox<>();
-                List<String> userRoleSelect = new ArrayList<>();
-                userRoleSelect.add(0, UserModel.ROLE_ADMIN);
-                userRoleSelect.add(1, UserModel.ROLE_EMPLOYEE);
-                userRoleSelect.add(2, UserModel.ROLE_USER);
-                userRoleField.setItems(userRoleSelect);
-                userRoleField.addValueChangeListener(event -> filter(grid));
-                userRoleField.setStyleName(ValoTheme.COMBOBOX_TINY);
-                userRoleField.setPlaceholder(id);
-                userRoleField.setId(id);
-                return userRoleField;
         }
         return new ComboBox();
     }
@@ -166,6 +154,17 @@ public class ReservationListViewImpl extends CustomComponent implements View, Re
         field.addValueChangeListener(event -> filter(grid));
         field.setId(id);
 
+        return field;
+    }
+
+    private DateField filterDateField(String id) {
+        DateField field = new DateField();
+        field.setDescription("filter for " + id);
+        field.setPlaceholder(id);
+        field.setStyleName(ValoTheme.DATEFIELD_TINY);
+        field.setWidth(null);
+        field.addValueChangeListener(event -> filter(grid));
+        field.setId(id);
         return field;
     }
 

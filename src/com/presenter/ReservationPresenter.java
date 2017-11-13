@@ -24,9 +24,9 @@ public class ReservationPresenter implements ReservationFormView.ReservationView
 
         // update or create user
         if (reservationModel.getReservationId() != null) {
-            ok = model.updateReservation(reservationModel);
+            ok = reservationModel.updateReservation();
         } else {
-            ok = model.createReservation(reservationModel);
+            ok = reservationModel.createReservation();
         }
 
         // get error and success message to display them in view

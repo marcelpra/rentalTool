@@ -61,15 +61,15 @@ public class UserModel {
         }
         return true;
     }
+
     /**
      * Method to create a new User
      *
-     * @param userModel the userModel to be saved in database
      * @return Boolean
      */
-    public boolean createUser(UserModel userModel) {
+    public boolean createUser() {
 
-        if (!userModel.validate()) {
+        if (!validate()) {
             return false;
         }
 
@@ -87,18 +87,18 @@ public class UserModel {
             // get connection
             connection = dbConnector.getConnection();
 
-            userModel.password = hashPassword(tempPassword);
+            password = hashPassword(tempPassword);
             // prepare and build sql insert query
             String sql = "INSERT INTO user (email, firstname, lastname, department, user_role, status_active, password) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement stmt = connection.prepareStatement(sql);
-            stmt.setString(1, userModel.email);
-            stmt.setString(2, userModel.firstname);
-            stmt.setString(3, userModel.lastname);
-            stmt.setString(4, userModel.department);
-            stmt.setString(5, userModel.userRole);
-            stmt.setBoolean(6, userModel.status);
-            stmt.setString(7, userModel.password);
+            stmt.setString(1, email);
+            stmt.setString(2, firstname);
+            stmt.setString(3, lastname);
+            stmt.setString(4, department);
+            stmt.setString(5, userRole);
+            stmt.setBoolean(6, status);
+            stmt.setString(7, password);
             countRow = stmt.executeUpdate();
         } catch (Exception e) {
             this.errorMsg = "user creating not successful";
@@ -120,13 +120,11 @@ public class UserModel {
     /**
      * Method to update a new User
      *
-     * @param userModel the userModel to be saved in database
      * @return Boolean
      */
-    public boolean updateUser(UserModel userModel) {
+    public boolean updateUser() {
 
-        System.out.println("department: " + userModel.department);
-        if (!userModel.validate()) {
+        if (!validate()) {
             return false;
         }
 
@@ -149,15 +147,15 @@ public class UserModel {
                     "status_active = ?, access_token = ?, expiry = ? " +
                     "WHERE user_ID = ?";
             PreparedStatement stmt = connection.prepareStatement(sql);
-            stmt.setString(1, userModel.email);
-            stmt.setString(2, userModel.firstname);
-            stmt.setString(3, userModel.lastname);
-            stmt.setString(4, userModel.department);
-            stmt.setString(5, userModel.userRole);
-            stmt.setBoolean(6, userModel.status);
-            stmt.setString(7, userModel.accessToken);
-            stmt.setTimestamp(8, userModel.expiry);
-            stmt.setInt(9, userModel.userID);
+            stmt.setString(1, email);
+            stmt.setString(2, firstname);
+            stmt.setString(3, lastname);
+            stmt.setString(4, department);
+            stmt.setString(5, userRole);
+            stmt.setBoolean(6,status);
+            stmt.setString(7, accessToken);
+            stmt.setTimestamp(8, expiry);
+            stmt.setInt(9, userID);
 
             countRow = stmt.executeUpdate();
         } catch (Exception e) {
@@ -204,7 +202,7 @@ public class UserModel {
         user.accessToken = RandomStringUtils.randomAlphanumeric(32);
         user.expiry = new Timestamp(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(LOGIN_EXPIRY));
 
-        Boolean updateOk = updateUser(user);
+        Boolean updateOk = user.updateUser();
         if (!updateOk) {
             this.errorMsg = "could not set token or expiry";
             return false;
