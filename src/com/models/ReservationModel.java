@@ -57,7 +57,8 @@ public class ReservationModel {
         }
 
         Connection connection = null;
-        int countRow = 0;
+        int reservationId = 0;
+        int success = 0;
         try {
             // get connection
             connection = dbConnector.getConnection();
@@ -68,13 +69,17 @@ public class ReservationModel {
             // prepare and build sql insert query
             String sql = "INSERT INTO reservation (date_from, date_to, gadgets, user_ID, status_active) " +
                     "VALUES (?, ?, ?, ?, ?)";
-            PreparedStatement stmt = connection.prepareStatement(sql);
+            PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             stmt.setObject(1, dateFrom);
             stmt.setObject(2, dateTo);
             stmt.setString(3, prepareGadgetString(gadgets));
             stmt.setInt(4, Integer.valueOf(userId));
             stmt.setBoolean(5, status);
-            countRow = stmt.executeUpdate();
+            success = stmt.executeUpdate();
+            ResultSet result = stmt.getGeneratedKeys();
+            if (result.next()) {
+                reservationId = result.getInt(1);
+            }
         } catch (Exception e) {
             this.errorMsg = "user creating not successful";
             e.printStackTrace();
@@ -83,9 +88,12 @@ public class ReservationModel {
         }
 
         // check result
-        if (countRow > 0) {
+        if (success > 0) {
             this.successMsg = "reservation successfully created";
-            return true;
+            this.reservationId = reservationId;
+
+            // update availability for all gadgets
+            return setGadgetAvailability();
         } else {
             this.errorMsg = "creating reservation not successful";
             return false;
@@ -139,7 +147,11 @@ public class ReservationModel {
         // check result
         if (countRow > 0) {
             this.successMsg = "reservation successfully updated";
-            return true;
+
+            // update availability for all gadgets
+            // TODO get availabilities for this reservation id,
+            // TODO then set them to available and again to reserved with new dates if reservation status is still active
+            return setGadgetAvailability();
         } else {
             this.errorMsg = "updating reservation not successful";
             return false;
@@ -183,6 +195,33 @@ public class ReservationModel {
         }
 
         return resultData;
+    }
+
+    private Boolean setGadgetAvailability() {
+        String availabilityStatus = AvailabilityModel.STATUS_RESERVED;
+
+        // set gadget availability to available if reservation got cancelled
+        if (!status) { availabilityStatus = AvailabilityModel.STATUS_AVAILABLE; }
+
+        Boolean updateAvailability = false;
+
+        // update availability for all selected gadgets
+        for (Integer gadget : gadgets) {
+            updateAvailability = AvailabilityModel.setAvailability(
+                    dateFrom,
+                    dateTo,
+                    gadget,
+                    availabilityStatus,
+                    reservationId,
+                    "update"
+            );
+        }
+        if (!updateAvailability) {
+            this.successMsg = "";
+            this.errorMsg = "creating reservation not successful";
+        }
+
+        return updateAvailability;
     }
 
     private String prepareGadgetString(ArrayList<Integer> list) {

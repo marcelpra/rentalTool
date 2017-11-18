@@ -1,7 +1,6 @@
 package com.views;
 
 import com.models.ReservationModel;
-import com.models.UserModel;
 import com.vaadin.navigator.View;
 
 public interface ReservationFormView extends View {

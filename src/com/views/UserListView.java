@@ -1,6 +1,5 @@
 package com.views;
 
-import com.vaadin.data.HasValue;
 import com.vaadin.navigator.View;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Grid;

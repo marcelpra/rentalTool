@@ -1,6 +1,7 @@
 package com.views;
 
 import com.SecurePageComponent;
+import com.models.AvailabilityModel;
 import com.models.ReservationModel;
 import com.vaadin.data.*;
 import com.vaadin.icons.VaadinIcons;
@@ -26,6 +27,11 @@ public class ReservationFormViewImpl extends SecurePageComponent implements Rese
 
     public ReservationFormViewImpl(ReservationModel reservation) {
         this.reservation = reservation;
+
+        // write availability
+        Boolean updateSuccess = AvailabilityModel.prepareAvailability();
+
+        // TODO catch error when saving availability
 
         // creating layout
         HorizontalLayout layout = new HorizontalLayout();
