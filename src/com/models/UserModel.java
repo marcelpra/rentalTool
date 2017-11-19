@@ -74,7 +74,7 @@ public class UserModel {
 
         Connection connection = null;
         int countRow = 0;
-        
+
         final String tempPassword = RandomStringUtils.randomAlphanumeric(6);
 
         // only allow admins to create user
