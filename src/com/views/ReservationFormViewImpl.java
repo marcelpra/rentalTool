@@ -103,14 +103,20 @@ public class ReservationFormViewImpl extends SecurePageComponent implements Rese
         statusField.setItems(statusSelect);
 
         // add all possible categories to gadgetCategoryField
+        gadgetCategoryField.setPlaceholder("select Category");
         gadgetCategoryField.setItems(GadgetDummy.getGadgetCategories());
         gadgetCategoryField.addValueChangeListener(event -> {
             System.out.println("selected item: " + event.getValue());
             updateGadgetComboBox(event.getValue());
+            gadgetField.setPlaceholder("select Gadget");
         });
+        gadgetCategoryField.setEmptySelectionAllowed(false);
+        gadgetCategoryField.setEmptySelectionCaption("please select Category");
 
         createGadgetView(reservation.getGadgets(), selectedGadgetsArea, null);
 
+        gadgetField.setPlaceholder("select Category first");
+        gadgetField.setEmptySelectionAllowed(false);
         gadgetField.addValueChangeListener(event -> {
             System.out.println("selected item: " + event.getValue());
             addGadgetSelection(event.getValue(), selectedGadgetsArea);
