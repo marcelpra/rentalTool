@@ -2,6 +2,7 @@ package com.views;
 
 import com.SecurePageComponent;
 import com.models.AvailabilityModel;
+import com.models.GadgetDummy;
 import com.models.ReservationModel;
 import com.vaadin.data.*;
 import com.vaadin.icons.VaadinIcons;
@@ -101,31 +102,19 @@ public class ReservationFormViewImpl extends SecurePageComponent implements Rese
 
         statusField.setItems(statusSelect);
 
-        // TODO select DISTINCT Gadget Categories
-
-        // TODO add placeholders to Fields
-
-        // TODO replace getGadgetName function
-        gadgetField.setItemCaptionGenerator(new ItemCaptionGenerator<Integer>() {
-            @Override
-            public String apply(Integer integer) {
-                // TODO rewrite same function in GadgetModel
-                return getGadgetName(integer);
-            }
+        // add all possible categories to gadgetCategoryField
+        gadgetCategoryField.setItems(GadgetDummy.getGadgetCategories());
+        gadgetCategoryField.addValueChangeListener(event -> {
+            System.out.println("selected item: " + event.getValue());
+            updateGadgetComboBox(event.getValue());
         });
-        List<Integer> gadgetSelect = new ArrayList<>();
-        gadgetSelect.add(0, 1);
-        gadgetSelect.add(1, 2);
-        gadgetSelect.add(2, 3);
-        gadgetSelect.add(3, 4);
 
-        gadgetField.setItems(gadgetSelect);
+        createGadgetView(reservation.getGadgets(), selectedGadgetsArea, null);
+
         gadgetField.addValueChangeListener(event -> {
             System.out.println("selected item: " + event.getValue());
             addGadgetSelection(event.getValue(), selectedGadgetsArea);
         });
-
-        createGadgetView(reservation.getGadgets(), selectedGadgetsArea, null);
 
         // define error message label
         errorMsg.setStyleName("failure align-center");
@@ -191,6 +180,13 @@ public class ReservationFormViewImpl extends SecurePageComponent implements Rese
         layout.setComponentAlignment(form, Alignment.TOP_CENTER);
     }
 
+    /**
+     * Creates a Button for each gadget from gadgetList and adds this button to specified layout
+     *
+     * @param gadgetList List of GadgetIds which should be added to reservation
+     * @param layout the target layout to add button to
+     * @param skipGadget the gadgetId which should be skipped
+     */
     private void createGadgetView(ArrayList<Integer> gadgetList, CssLayout layout, Integer skipGadget) {
 
         ArrayList<Integer> resultList = new ArrayList<Integer>();
@@ -206,23 +202,19 @@ public class ReservationFormViewImpl extends SecurePageComponent implements Rese
             selectedItem.addClickListener(event -> {
                 removeGadgetSelection(gadget, layout);
             });
-            selectedItem.setCaption(getGadgetName(gadget));
+            selectedItem.setCaption(GadgetDummy.getGadgetById(gadget).getDescription());
             layout.addComponent(selectedItem);
             resultList.add(gadget);
         }
         reservation.setGadgets(resultList);
     }
 
-    private String getGadgetName(Integer gadgetId) {
-        switch (gadgetId) {
-            case 1: return ("Gadget 1");
-            case 2: return ("Gadget 2");
-            case 3: return ("Gadget 3");
-            case 4: return ("Gadget 4");
-        }
-        return "";
-    }
-
+    /**
+     * Adds a selected gadget to reservation and creates a new button for it
+     *
+     * @param gadgetId the selected gadget Id
+     * @param layout the layout where to add the button for this gadget
+     */
     private void addGadgetSelection(Integer gadgetId, CssLayout layout) {
         // if null selection
         if (gadgetId == null) {
@@ -244,6 +236,12 @@ public class ReservationFormViewImpl extends SecurePageComponent implements Rese
         createGadgetView(oldGadgets, layout, null);
     }
 
+    /**
+     * Removes a gadget from reservation and the related button from layout
+     *
+     * @param gadgetId the gadget Id which should be removed from reservation
+     * @param layout the layout where to remove the button for this gadget
+     */
     private void removeGadgetSelection(Integer gadgetId, CssLayout layout) {
 
         layout.removeAllComponents();
@@ -253,6 +251,34 @@ public class ReservationFormViewImpl extends SecurePageComponent implements Rese
         layout.removeAllComponents();
 
         createGadgetView(oldGadgets, layout, gadgetId);
+    }
+
+    /**
+     * Method that updates items from Gadget ComboBox to add only items from selected category
+     *
+     * @param category the selected category from category ComboBox
+     */
+    private void updateGadgetComboBox(String category) {
+        List<Integer> gadgetItems = new ArrayList<>();
+
+        // TODO add availability check to the getGadget... function
+        List<GadgetDummy> gadgets = GadgetDummy.getGadgetsForCategory(category);
+
+        Integer iterator = 0;
+        for (GadgetDummy gadget : gadgets) {
+            gadgetItems.add(iterator, gadget.getGadgetId());
+            iterator++;
+        }
+
+        gadgetField.setItems(gadgetItems);
+        gadgetField.setItemCaptionGenerator(new ItemCaptionGenerator<Integer>() {
+            @Override
+            public String apply(Integer integer) {
+                return GadgetDummy.getGadgetById(integer).getDescription();
+            }
+        });
+
+
     }
 
     List<ReservationViewListener> listeners = new ArrayList<ReservationViewListener>();

@@ -1,5 +1,8 @@
 package com.models;
 
+import com.dbConnector.dbConnector;
+
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,7 +15,7 @@ public class GadgetDummy {
     private Integer inventoryNumber;
     private String status;
 
-    GadgetDummy(Integer gadgetId, String name, String category, String description, Integer inventoryNumber, String status) {
+    GadgetDummy() {
         this.gadgetId = gadgetId;
         this.name = name;
         this.category = category;
@@ -21,17 +24,132 @@ public class GadgetDummy {
         this.status = status;
     }
 
-    public static List<GadgetDummy> getGadgets() {
-        ArrayList<GadgetDummy> list = new ArrayList<>();
-        list.add(new GadgetDummy(1, "gadget 1", "category 1", "description", 1, "active"));
-        list.add(new GadgetDummy(2, "gadget 2", "category 1", "description", 2, "active"));
-        list.add(new GadgetDummy(3, "gadget 3", "category 1", "description", 3, "active"));
-        list.add(new GadgetDummy(4, "gadget 4", "category 2", "description", 4, "active"));
-        list.add(new GadgetDummy(5, "gadget 5", "category 2", "description", 5, "active"));
-        list.add(new GadgetDummy(6, "gadget 6", "category 2", "description", 6, "active"));
+    public static GadgetDummy getGadgetById(Integer gadgetId) {
+        GadgetDummy resultData = new GadgetDummy();
+        Connection connection = null;
 
-        return list;
+        try {
+            // get connection
+            connection = dbConnector.getConnection();
+
+            // prepare and build sql update query
+            String sql = "SELECT * FROM gadget WHERE gadgetID = ?";
+            PreparedStatement stmt;
+            stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, gadgetId);
+            ResultSet result = stmt.executeQuery();
+
+            while (result.next()) {
+                GadgetDummy gadget = new GadgetDummy();
+                gadget.category = result.getString("category");
+                gadget.gadgetId = result.getInt("gadgetID");
+                gadget.description = result.getString("description");
+                gadget.inventoryNumber = result.getInt("inventory_No");
+                gadget.status = result.getString("gadget_active");
+                resultData = gadget;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            dbConnector.closeConnection(connection);
+        }
+
+        return resultData;
     }
+
+    public static List<GadgetDummy> getGadgets() {
+        ArrayList<GadgetDummy> resultData = new ArrayList<>();
+        Connection connection = null;
+
+        try {
+            // get connection
+            connection = dbConnector.getConnection();
+
+            // prepare and build sql update query
+            String sql = "SELECT * FROM gadget";
+            PreparedStatement stmt;
+            stmt = connection.prepareStatement(sql);
+            ResultSet result = stmt.executeQuery();
+
+            while (result.next()) {
+                GadgetDummy gadget = new GadgetDummy();
+                gadget.category = result.getString("category");
+                gadget.gadgetId = result.getInt("gadgetID");
+                gadget.description = result.getString("description");
+                gadget.inventoryNumber = result.getInt("inventory_No");
+                gadget.status = result.getString("gadget_active");
+                resultData.add(gadget);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            dbConnector.closeConnection(connection);
+        }
+
+        return resultData;
+    }
+
+    public static List<String> getGadgetCategories() {
+
+        // TODO add dateFrom and dateTo to input parameters to join availability table and select only available gadgets
+        ArrayList<String> resultData = new ArrayList<>();
+        Connection connection = null;
+
+        try {
+            // get connection
+            connection = dbConnector.getConnection();
+
+            // prepare and build sql update query
+            String sql = "SELECT DISTINCT category FROM gadget";
+            PreparedStatement stmt;
+            stmt = connection.prepareStatement(sql);
+            ResultSet result = stmt.executeQuery();
+
+            while (result.next()) {
+                resultData.add(result.getString("category"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            dbConnector.closeConnection(connection);
+        }
+
+        return resultData;
+    }
+
+    public static List<GadgetDummy> getGadgetsForCategory(String category) {
+
+        // TODO add dateFrom and dateTo to input parameters to join availability table and select only available gadgets
+        ArrayList<GadgetDummy> resultData = new ArrayList<>();
+        Connection connection = null;
+
+        try {
+            // get connection
+            connection = dbConnector.getConnection();
+
+            // prepare and build sql update query
+            String sql = "SELECT * FROM gadget WHERE category = ?";
+            PreparedStatement stmt;
+            stmt = connection.prepareStatement(sql);
+            stmt.setString(1, category);
+            ResultSet result = stmt.executeQuery();
+
+            while (result.next()) {
+                GadgetDummy gadget = new GadgetDummy();
+                gadget.gadgetId = result.getInt("gadgetID");
+                gadget.description = result.getString("description");
+                resultData.add(gadget);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            dbConnector.closeConnection(connection);
+        }
+
+        return resultData;
+    }
+
+
 
     public Integer getGadgetId() {
         return gadgetId;
@@ -40,4 +158,8 @@ public class GadgetDummy {
     public void setGadgetId(Integer gadgetId) {
         this.gadgetId = gadgetId;
     }
+
+    public String getCategory() {return category;}
+
+    public String getDescription() {return description;}
 }

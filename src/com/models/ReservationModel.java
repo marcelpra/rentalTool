@@ -65,7 +65,7 @@ public class ReservationModel {
     }
 
     /**
-     * Method to create a new User
+     * Method to create a new Reservation
      *
      * @return Boolean
      */
@@ -168,8 +168,6 @@ public class ReservationModel {
             this.successMsg = "reservation successfully updated";
 
             // update availability for all gadgets
-            // TODO get availabilities for this reservation id,
-            // TODO then set them to available and again to reserved with new dates if reservation status is still active
             return setGadgetAvailability();
         } else {
             this.errorMsg = "updating reservation not successful";
@@ -216,11 +214,17 @@ public class ReservationModel {
         return resultData;
     }
 
+    /**
+     * Method that updates the availability according to reservation status and dates
+     *
+     * @return Boolean - if updating was successful
+     */
     private Boolean setGadgetAvailability() {
         String availabilityStatus = AvailabilityModel.STATUS_RESERVED;
+        Integer reservationId = getReservationId();
 
-        // set gadget availability to available if reservation got cancelled
-        if (!status) { availabilityStatus = AvailabilityModel.STATUS_AVAILABLE; }
+        // set gadget availability to available and reservation id to 0 if reservation got cancelled
+        if (!status) { availabilityStatus = AvailabilityModel.STATUS_AVAILABLE; reservationId = 0; }
 
         Boolean updateAvailability = false;
 
@@ -237,12 +241,18 @@ public class ReservationModel {
         }
         if (!updateAvailability) {
             this.successMsg = "";
-            this.errorMsg = "creating reservation not successful";
+            this.errorMsg = "updating availability not successful";
         }
 
         return updateAvailability;
     }
 
+    /**
+     * Function that returns a string of all values from array list
+     *
+     * @param list of gadgets which are included in this reservation
+     * @return String of gadgetIds
+     */
     private String prepareGadgetString(ArrayList<Integer> list) {
         // prepare gadgetString
         Boolean processedFirst = false;
