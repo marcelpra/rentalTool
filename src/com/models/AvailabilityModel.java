@@ -22,7 +22,7 @@ public class AvailabilityModel {
     public static final String STATUS_AVAILABLE = "available";
 
     /**
-     * Method to create a new User
+     * Method to create a new Availability
      *
      * @return Boolean
      */
@@ -105,7 +105,7 @@ public class AvailabilityModel {
     }
 
     /**
-     * Method that searches for a reservation by reservationID
+     * Method that searches for a availabilities by reservationID
      *
      * @param reservationId the id of reservation
      * @return AvailabilityModel availability
@@ -136,32 +136,43 @@ public class AvailabilityModel {
     }
 
     /**
-     * Method that searches for a reservation by reservationID
+     * Method that returns searches for a availability for a gadget in date range with given availability status
+     * which does not contain to given reservation id (to check if gadget is available for a reservation in that period)
      *
      * @param dateFrom availability date from
      * @param dateTo availability date to
      * @param gadgetId the id of gadget
-     * @return AvailabilityModel avaiability
+     * @param availabilityStatus the status to search for
+     * @param reservationId the id of reservation to exclude from search to not get availability of own reservation
+     * @return AvailabilityModel availability
      */
-    public List<AvailabilityModel> getAvailabilityForGadgetInRange(
+    public static List<AvailabilityModel> getAvailabilityForGadgetInRange(
             LocalDate dateFrom,
             LocalDate dateTo,
-            Integer gadgetId
+            Integer gadgetId,
+            String availabilityStatus,
+            Integer reservationId
     ) {
         ArrayList<AvailabilityModel> resultData = new ArrayList<>();
         Connection connection = null;
+
+        // if it is a new reservation, set reservation id to 0 to avoid null pointer exception
+        if (reservationId == null) { reservationId = 0; }
 
         try {
             // get connection
             connection = dbConnector.getConnection();
 
             // prepare and build sql update query
-            String sql = "SELECT * FROM availability WHERE gadget_ID = ? AND date_availability >= ? AND date_availability <= ?";
+            String sql = "SELECT * FROM availability "
+            + "WHERE gadget_ID = ? AND date_availability >= ? AND date_availability <= ? AND status_availability = ? AND reservation_ID <> ?";
             PreparedStatement stmt;
             stmt = connection.prepareStatement(sql);
             stmt.setInt(1, gadgetId);
             stmt.setObject(2, dateFrom);
             stmt.setObject(3, dateTo);
+            stmt.setString(4, availabilityStatus);
+            stmt.setInt(5, reservationId);
             ResultSet result = stmt.executeQuery();
 
             resultData = setResultData(result, resultData);
@@ -174,6 +185,20 @@ public class AvailabilityModel {
         return resultData;
     }
 
+    /**
+     * Method that sets availability for a specific date range for a gadget and adds relation to reservation
+     * the method is used to "update" the availability and to "create" availability if we need to write availability
+     * for future
+     *
+     * @param dateFrom start date of setting availability
+     * @param dateTo end date of setting availability
+     * @param gadgetId the gadget id where we need to set availability for
+     * @param status the availability status to set
+     * @param reservationId the reservation id where this gadget is reserved
+     * @param method can be "update" when creating / updating a reservation or "create" when writing availability
+     *               for future
+     * @return Boolean - if writing availability was successful
+     */
     public static Boolean setAvailability(
             LocalDate dateFrom,
             LocalDate dateTo,
@@ -183,19 +208,22 @@ public class AvailabilityModel {
             String method
     ) {
 
-        // reset all existing availabilities with this reservation ID to status available
-        List<AvailabilityModel> oldAvailability = getAvailabilityForReservation(reservationId);
-        if (!oldAvailability.isEmpty()) {
-            for (AvailabilityModel oldModel : oldAvailability) {
-                oldModel.status = STATUS_AVAILABLE;
-                oldModel.reservationId = 0;
-                oldModel.updateAvailability();
+        if (!reservationId.equals(0)) {
+            // reset all existing availabilities with this reservation ID to status available
+            List<AvailabilityModel> oldAvailability = getAvailabilityForReservation(reservationId);
+            if (!oldAvailability.isEmpty()) {
+                for (AvailabilityModel oldModel : oldAvailability) {
+                    oldModel.status = STATUS_AVAILABLE;
+                    oldModel.reservationId = 0;
+                    oldModel.updateAvailability();
+                }
             }
         }
 
         // set status to reserved for reservation period
         Boolean success = false;
         for (LocalDate date = dateFrom; date.isBefore(dateTo.plusDays(1)); date = date.plusDays(1)) {
+            System.out.println("set availability for gadget: " + gadgetId + " and date " + date);
             AvailabilityModel availability  = new AvailabilityModel();
             availability.dateAvailability = date;
             availability.gadgetId = gadgetId;
@@ -212,6 +240,12 @@ public class AvailabilityModel {
         return success;
     }
 
+    /**
+     * Method that writes availability for future
+     * it sets for every gadget from gadget table a new availability with status available
+     *
+     * @return Boolean - if preparing availability was successful
+     */
     public static Boolean prepareAvailability() {
 
         Boolean updateSuccess = false;
@@ -221,14 +255,16 @@ public class AvailabilityModel {
         for (GadgetDummy gadget : gadgets) {
             // get latest day of availability
             LocalDate startDate = getLatestAvailability(gadget.getGadgetId());
+            startDate = startDate.plusDays(1);
             LocalDate today = LocalDate.now();
+            System.out.println("latest availability date: " + startDate);
 
             // write availability 1 year in advance
             // TODO change number of days or use constant
             LocalDate endDate = today.plusDays(10);
 
             // if latest day of availability is already set to 1 year in advance, continue
-            if (!endDate.isAfter(startDate.plusDays(1))) {
+            if (!endDate.isAfter(startDate)) {
                 continue;
             }
             updateSuccess = setAvailability(
@@ -244,6 +280,12 @@ public class AvailabilityModel {
         return updateSuccess;
     }
 
+    /**
+     * Method that gets the latest set availability date for required gadget
+     *
+     * @param gadgetId the gadget id for which we search for latest availability
+     * @return LocalDate of latest set availability
+     */
     private static LocalDate getLatestAvailability(Integer gadgetId) {
         ArrayList<AvailabilityModel> resultData = new ArrayList<>();
         Connection connection = null;

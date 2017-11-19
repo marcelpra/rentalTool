@@ -42,6 +42,25 @@ public class ReservationModel {
             errorMsg = "Status not set";
             return false;
         }
+
+        // check if the gadgets of the reservation are available for the reservations period
+        for (Integer gadgetId : gadgets) {
+            List<AvailabilityModel> notAvailable = AvailabilityModel.getAvailabilityForGadgetInRange(
+                dateFrom,
+                dateTo,
+                gadgetId,
+                AvailabilityModel.STATUS_RESERVED,
+                reservationId
+            );
+            if (!notAvailable.isEmpty()) {
+                StringBuilder notAvailableDates = new StringBuilder();
+                for (AvailabilityModel availability : notAvailable) {
+                    notAvailableDates.append(" " + availability.getDateAvailability().toString());
+                }
+                errorMsg = "Gadget " + gadgetId + " not available on dates " + notAvailableDates;
+                return false;
+            }
+        }
         return true;
     }
 
