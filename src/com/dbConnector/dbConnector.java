@@ -1,12 +1,13 @@
 package com.dbConnector;
 
 import java.sql.*;
+import java.util.TimeZone;
 
 public class dbConnector {
 
     // JDBC driver name and database URL
-    static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
-    static final String DB_URL = "jdbc:mysql://localhost/rentaltool";
+    static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
+    static final String DB_URL = "jdbc:mysql://localhost/rentaltool?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC\n";
 
     //  Database credentials
     static final String USER = "tooluser";
@@ -15,6 +16,8 @@ public class dbConnector {
     public static Connection getConnection() {
         Connection conn = null;
         try {
+            TimeZone timeZone = TimeZone.getTimeZone("Europe/Berlin");
+            TimeZone.setDefault(timeZone);
 
             Class.forName(JDBC_DRIVER);
             conn = DriverManager.getConnection(DB_URL, USER, PASS);

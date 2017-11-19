@@ -9,7 +9,6 @@ import com.vaadin.ui.components.grid.HeaderRow;
 import com.views.ReservationFormView;
 import com.views.ReservationListView;
 import com.views.UserListView;
-import org.apache.regexp.RE;
 
 
 public class ReservationListPresenter implements ReservationListView.ReservationListViewListener {

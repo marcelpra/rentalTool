@@ -1,7 +1,6 @@
 package com.models;
 
 import com.dbConnector.dbConnector;
-import com.google.gwt.core.ext.typeinfo.NotFoundException;
 import com.vaadin.server.VaadinSession;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.mindrot.jbcrypt.BCrypt;
@@ -75,6 +74,7 @@ public class UserModel {
 
         Connection connection = null;
         int countRow = 0;
+        
         final String tempPassword = RandomStringUtils.randomAlphanumeric(6);
 
         // only allow admins to create user
@@ -306,16 +306,16 @@ public class UserModel {
      * Method that creates additional condition for a DB-Query for defined userRoles
      *
      * @return String with additional condition for a query
-     * @throws NotFoundException if user was not found
+     * @throws Exception if user was not found
      */
-    private String accessControl() throws NotFoundException {
+    private String accessControl() throws Exception {
         String userId = String.valueOf(VaadinSession.getCurrent().getAttribute("userID"));
 
         String queryCondition = "";
         UserModel user = new UserModel();
         user = user.queryUser("user_ID", userId);
         if (user.getUserID() == null) {
-            throw new NotFoundException("User not found");
+            throw new Exception("User not found");
         }
 
         if (!user.getUserRole().equals(ROLE_ADMIN)) {

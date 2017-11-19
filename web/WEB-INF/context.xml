@@ -3,5 +3,6 @@
               maxActive="50" maxIdle="30" maxWait="10000"
               email="tooluser" password="tool"
               driverClassName="com.mysql.jdbc.Driver"
-              url="jdbc:mysql://localhost:3306/rentaltool"/>
+              url="jdbc:mysql://localhost:3306/rentaltool"
+    />
 </Context>
