@@ -34,7 +34,8 @@ public class ReservationModel {
             errorMsg = "Invalid reservation period";
             return false;
         }
-        if (gadgets == null || gadgets.isEmpty()) {
+        // validate gadget list only when status is active
+        if ((gadgets == null || gadgets.isEmpty()) && status) {
             errorMsg = "No Gadget selected";
             return false;
         }
@@ -190,9 +191,11 @@ public class ReservationModel {
      *
      * @return List of ReservationModels
      */
-    public static List<ReservationModel> getReservations() {
+    public static List<ReservationModel> getReservations(Integer userId) {
         ArrayList<ReservationModel> resultData = new ArrayList<>();
         Connection connection = null;
+
+        String sessionUser = String.valueOf(VaadinSession.getCurrent().getAttribute("userID"));
 
         try {
             // get connection
@@ -201,7 +204,24 @@ public class ReservationModel {
             // prepare and build sql update query
             String sql = "SELECT * FROM reservation";
             PreparedStatement stmt;
-            stmt = connection.prepareStatement(sql);
+
+            if (userId != null) {
+                LocalDate today = LocalDate.now();
+                // for own reservations list show only reservations for the future
+                sql = sql + " WHERE user_ID = ? AND date_from >= ?";
+                stmt = connection.prepareStatement(sql);
+                stmt.setInt(1, userId);
+                stmt.setObject(2, today);
+            } else if (!UserModel.validateAccessControl(UserModel.ROLE_ADMIN)) {
+                sql = sql + " WHERE user_ID = ?";
+                if (sessionUser == null) {
+                    return resultData;
+                }
+                stmt = connection.prepareStatement(sql);
+                stmt.setInt(1, Integer.valueOf(sessionUser));
+            } else {
+                stmt = connection.prepareStatement(sql);
+            }
             ResultSet result = stmt.executeQuery();
 
             resultData = setResultData(result, resultData);

@@ -17,7 +17,7 @@ public class ReservationListViewImpl extends CustomComponent implements View, Re
 
     private final Grid<ReservationModel> grid = new Grid<>();
 
-    public ReservationListViewImpl() {
+    public ReservationListViewImpl(Integer user) {
 
         VerticalLayout layout = new VerticalLayout();
         layout.setHeight("100%");
@@ -25,10 +25,14 @@ public class ReservationListViewImpl extends CustomComponent implements View, Re
         Label label = new Label("");
         label.setStyleName("h1 bold align-center");
         label.setHeight(null);
-        label.setValue("Reservation List");
+        if (user == null) {
+            label.setValue("Reservation List");
+        } else {
+            label.setValue("My Reservations");
+        }
         layout.addComponent(label);
 
-        List<ReservationModel> reservations = ReservationModel.getReservations();
+        List<ReservationModel> reservations = ReservationModel.getReservations(user);
         ListDataProvider<ReservationModel> dataProvider = new ListDataProvider<>(reservations);
 
         grid.setDataProvider(dataProvider);

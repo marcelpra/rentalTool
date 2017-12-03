@@ -29,17 +29,12 @@ public class GadgetListPresenter implements GadgetListView.GadgetListViewListene
                 UI.getCurrent().getNavigator().navigateTo(RentalTool.HOME + "/" + RentalTool.ADD_GADGET);
                 break;
             case "edit":
-                String gagdetID = event.getButton().getData().toString();
+                String gadgetID = event.getButton().getData().toString();
                 if (gadgetID != null) {
                     UI.getCurrent().getNavigator().navigateTo(RentalTool.HOME + "/" + RentalTool.ADD_GADGET + "/" + gadgetID);
                 }
                 break;
         }
-    }
-
-    @Override
-    public void gadgetButton(Button.ClickEvent event) {
-
     }
 
     @Override
@@ -56,32 +51,27 @@ public class GadgetListPresenter implements GadgetListView.GadgetListViewListene
                 case "Category":
                     TextField category = (TextField) column;
                     System.out.println(column.getId() + "value: " + category.getValue());
-                    dataProvider.addFilter(GadgetModel::getCategory, s -> s.toString().contains(category.getValue()));
+                    dataProvider.addFilter(GadgetModel::getCategory, s -> s.contains(category.getValue()));
                     break;
                 case "ID":
                     TextField gadgetID = (TextField) column;
                     System.out.println(column.getId() + "value: " + gadgetID.getValue());
-                    dataProvider.addFilter(GadgetModel::getGadgetID, s -> s.toString(gadgetID.getValue()));
+                    dataProvider.addFilter(GadgetModel::getGadgetID, s -> s.equals(gadgetID.getValue()));
                     break;
                 case "Description":
                     TextField description = (TextField) column;
                     System.out.println(column.getId() + "value: " + description.getValue());
-                    dataProvider.addFilter(GadgetModel::getDescription, s -> s.toString(description.getValue()));
+                    dataProvider.addFilter(GadgetModel::getDescription, s -> s.contains(description.getValue()));
                     break;
                 case "Inventory_No":
                     TextField inventory_no = (TextField) column;
                     System.out.println(column.getId() + "value: " + inventory_no.getValue());
-                    dataProvider.addFilter(GadgetModel::getInventory_No, s -> s.contains(inventory_no.getValue()));
+                    dataProvider.addFilter(GadgetModel::getInventory_No, s -> s.equals(inventory_no.getValue()));
                     break;
                 case "Gadget_active":
                     TextField gadget_active = (TextField) column;
                     System.out.println(column.getId() + "value: " + gadget_active.getValue());
-                    dataProvider.addFilter(GadgetModel::getGadget_active, s -> s.contains(gadget_active.getValue()));
-                    break;
-                case "CreatedTimestamp":
-                    DateField createdtimestamp = (DateField) column;
-                    System.out.println(column.getId() + "value: " + createdtimestamp.getValue());
-                    dataProvider.addFilter(GadgetModel::getCreatedtimestamp, s -> s.contains(createdtimestamp.getValue()));
+                    dataProvider.addFilter(GadgetModel::getGadget_active, s -> s.equals(gadget_active.getValue()));
                     break;
             }
         }

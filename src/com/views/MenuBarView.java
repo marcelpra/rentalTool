@@ -99,6 +99,12 @@ public class MenuBarView extends CustomComponent {
             menuItemsLayout.addComponent(gadgetItemComponent);
         }
 
+        // add Reservation Menu Item
+        Component logoutItemComponent = ValoMenuItemButton("Logout");
+        logoutItemComponent = buildBadgeWrapper(logoutItemComponent,
+                notificationsBadge);
+        menuItemsLayout.addComponent(logoutItemComponent);
+
         return menuItemsLayout;
     }
 
@@ -133,7 +139,19 @@ public class MenuBarView extends CustomComponent {
             case "Gadgets":
                 menuButton.setIcon(VaadinIcons.BRIEFCASE);
                 menuButton.addClickListener(
-                        event -> UI.getCurrent().getNavigator().navigateTo(RentalTool.HOME + "/" + RentalTool.LIST_USERS)
+                        event -> UI.getCurrent().getNavigator().navigateTo(RentalTool.HOME + "/" + RentalTool.LIST_GADGETS)
+                );
+                break;
+            case "Logout":
+                menuButton.setIcon(VaadinIcons.EXIT);
+                menuButton.addClickListener(
+                        event -> {
+                            // logout user
+                            UserModel.logout();
+
+                            // redirect to login view
+                            UI.getCurrent().getNavigator().navigateTo(RentalTool.LOGIN);
+                        }
                 );
                 break;
         }

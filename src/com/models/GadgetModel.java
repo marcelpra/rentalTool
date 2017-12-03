@@ -10,11 +10,11 @@ import java.util.*;
 public class GadgetModel {
 
     private String category;
-    private String gadgetID;
+    private Integer gadgetID = null;
     private String description;
     private Integer inventory_No;
     private Boolean gadget_active = true;
-    private Date createdtimestamp;
+    private Date createdTimestamp;
 
     private String errorMsg = "";
     private String successMsg = "";
@@ -59,15 +59,15 @@ public class GadgetModel {
             // get connection
             connection = dbConnector.getConnection();
             // prepare and build sql insert query
-            String sql = "INSERT INTO gadget (category, gadgetID, description, inventory_No, gadget_active, createdtimestamp) " +
+            String sql = "INSERT INTO gadget (category, gadgetID, description, inventory_No, gadget_active, created_timestamp) " +
                     "VALUES (?, ?, ?, ?, ?, ?)";
             PreparedStatement stmt = connection.prepareStatement(sql);
             stmt.setString(1, category);
-            stmt.setString(2, gadgetID);
+            stmt.setInt(2, gadgetID);
             stmt.setString(3, description);
             stmt.setInt(4, inventory_No);
             stmt.setBoolean(5, gadget_active);
-            stmt.setDate(6, createdtimestamp);
+            stmt.setDate(6, createdTimestamp);
             countRow = stmt.executeUpdate();
         } catch (Exception e) {
             this.errorMsg = "user creating not successful";
@@ -112,14 +112,14 @@ public class GadgetModel {
             connection = dbConnector.getConnection();
 
             // prepare and build sql update query
-            String sql = "UPDATE gadget SET category = ?, gadgetID = ?, descricption = ?, inventory_No = ?, gadget_active = ?, createdtimestamp = ? ";
+            String sql = "UPDATE gadget SET category = ?, gadgetID = ?, description = ?, inventory_No = ?, gadget_active = ?, created_timestamp = ? ";
             PreparedStatement stmt = connection.prepareStatement(sql);
             stmt.setString(1, category);
-            stmt.setString(2, gadgetID);
+            stmt.setInt(2, gadgetID);
             stmt.setString(3, description);
             stmt.setInt(4, inventory_No);
             stmt.setBoolean(5, gadget_active);
-            stmt.setDate(6, createdtimestamp);
+            stmt.setDate(6, createdTimestamp);
             countRow = stmt.executeUpdate();
         } catch (Exception e) {
             this.errorMsg = "gadget updating not successful";
@@ -204,8 +204,7 @@ public class GadgetModel {
 
             // prepare and build sql update query
             String sql = "SELECT * FROM gadget";
-            PreparedStatement stmt = null;
-
+            PreparedStatement stmt = connection.prepareStatement(sql);
             ResultSet result = stmt.executeQuery();
 
             resultData = setResultData(result, resultData);
@@ -231,11 +230,11 @@ public class GadgetModel {
             while (result.next()) {
                 GadgetModel gadget = new GadgetModel();
                 gadget.setCategory(result.getString("category"));
-                gadget.setGadgetID(result.getString("gadgetID"));
+                gadget.setGadgetID(result.getInt("gadgetID"));
                 gadget.setDescription(result.getString("description"));
                 gadget.setInventory_No(result.getInt("inventory_No"));
                 gadget.setGadget_active(result.getBoolean("gadget_active"));
-                gadget.setCreatedtimestamp(result.getDate("createdtimestamp"));
+                gadget.setCreatedTimestamp(result.getDate("created_timestamp"));
                 returnValue.add(gadget);
             }
         } catch (SQLException e) {
@@ -298,11 +297,11 @@ public class GadgetModel {
         this.category = category;
     }
 
-    public String getGadgetID() {
+    public Integer getGadgetID() {
         return gadgetID;
     }
 
-    public void setGadgetID(String gadgetID) {
+    public void setGadgetID(Integer gadgetID) {
         this.gadgetID = gadgetID;
     }
 
@@ -322,12 +321,12 @@ public class GadgetModel {
         this.inventory_No = inventory_No;
     }
 
-    public Date getCreatedtimestamp() {
-        return createdtimestamp;
+    public Date getCreatedTimestamp() {
+        return createdTimestamp;
     }
 
-    public void setCreatedtimestamp(Date createdtimestamp) {
-        this.createdtimestamp = createdtimestamp;
+    public void setCreatedTimestamp(Date createdTimestamp) {
+        this.createdTimestamp = createdTimestamp;
     }
 
     public Boolean getGadget_active() {

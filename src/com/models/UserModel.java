@@ -215,6 +215,20 @@ public class UserModel {
         return true;
     }
 
+    public static void logout() {
+        String sessionUser = String.valueOf(VaadinSession.getCurrent().getAttribute("userID"));
+
+        // set access token expiry to now
+        UserModel user = new UserModel();
+        user = user.getUser(Integer.valueOf(sessionUser));
+        user.expiry = new Timestamp(System.currentTimeMillis());
+        user.updateUser();
+
+        // delete session variables
+        VaadinSession.getCurrent().setAttribute("userID", null);
+        VaadinSession.getCurrent().setAttribute("accessToken", null);
+    }
+
     /**
      * Method that validates if current access token for user id is valid
      *

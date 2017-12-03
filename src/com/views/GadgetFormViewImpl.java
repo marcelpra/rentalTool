@@ -3,6 +3,7 @@ package com.views;
 import com.SecurePageComponent;
 import com.models.GadgetModel;
 import com.vaadin.data.Binder;
+import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.validator.EmailValidator;
 import com.vaadin.ui.*;
 
@@ -78,6 +79,8 @@ public class GadgetFormViewImpl extends SecurePageComponent implements GadgetFor
         header.setStyleName("h1 bold align-center");
         header.setSizeFull();
 
+        System.out.println("");
+
         // do some styling to fields
         categoryField.setWidth(100, Unit.PERCENTAGE);
         descriptionField.setWidth(100, Unit.PERCENTAGE);
@@ -120,11 +123,11 @@ public class GadgetFormViewImpl extends SecurePageComponent implements GadgetFor
         // bind form to gadgetModel
         Binder<GadgetModel> binder = new Binder<>();
         binder.forField(categoryField)
-                .withValidator(new EmailValidator("invalid category"))
                 .bind(GadgetModel::getCategory, GadgetModel::setCategory);
         binder.forField(descriptionField)
                 .bind(GadgetModel::getDescription, GadgetModel::setDescription);
         binder.forField(inventory_NoField)
+                .withConverter(new StringToIntegerConverter("Must enter a number"))
                 .bind(GadgetModel::getInventory_No, GadgetModel::setInventory_No);
         binder.forField(statusField)
                 .bind(GadgetModel::getGadget_active, GadgetModel::setGadget_active);

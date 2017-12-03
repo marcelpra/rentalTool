@@ -2,14 +2,13 @@ package com.views;
 
 import com.RentalTool;
 import com.SecurePageComponent;
+import com.models.GadgetModel;
 import com.models.ReservationModel;
 import com.models.UserModel;
-import com.presenter.ReservationListPresenter;
-import com.presenter.ReservationPresenter;
-import com.presenter.UserListPresenter;
-import com.presenter.UserPresenter;
+import com.presenter.*;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
+import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.*;
 import com.vaadin.ui.HorizontalLayout;
 
@@ -21,6 +20,7 @@ public class MainViewImpl extends SecurePageComponent implements View, MainView,
 
     private UserModel user = new UserModel();
     private ReservationModel reservation = new ReservationModel();
+    private GadgetModel gadget = new GadgetModel();
 
     private static final String[] VIEWS = new String[] {
         RentalTool.HOME,
@@ -28,7 +28,9 @@ public class MainViewImpl extends SecurePageComponent implements View, MainView,
         RentalTool.LIST_USERS,
         RentalTool.LOGIN,
         RentalTool.CREATE_RESERVATION,
-        RentalTool.LIST_RESERVATION
+        RentalTool.LIST_RESERVATION,
+        RentalTool.ADD_GADGET,
+        RentalTool.LIST_GADGETS
     };
 
     /**
@@ -43,6 +45,7 @@ public class MainViewImpl extends SecurePageComponent implements View, MainView,
 
         this.user = new UserModel();
         this.reservation = new ReservationModel();
+        this.gadget = new GadgetModel();
 
         String viewName = RentalTool.HOME;
         Integer id = null;
@@ -92,15 +95,18 @@ public class MainViewImpl extends SecurePageComponent implements View, MainView,
         // set view variables
         switch (viewName) {
             case RentalTool.HOME:
-                if (viewId != null) {
-                    this.user = this.user.getUser(viewId);
+                String sessionUser = String.valueOf(VaadinSession.getCurrent().getAttribute("userID"));
+                if (sessionUser != null || !sessionUser.isEmpty()) {
+                    this.user = user.getUser(Integer.valueOf(sessionUser));
+                    ReservationListViewImpl ownReservationList = new ReservationListViewImpl(this.user.getUserID());
+                    UserFormViewImpl main3 = new UserFormViewImpl(this.user);
+                    new UserPresenter(this.user, main3);
+                    new ReservationListPresenter(this.reservation, ownReservationList);
+                    ownReservationList.setSizeFull();
+                    ownReservationList.setWidth("100%");
+                    layout.addComponent(ownReservationList);
+                    layout.setExpandRatio(ownReservationList, 1.0f);
                 }
-                UserFormViewImpl home = new UserFormViewImpl(this.user);
-                new UserPresenter(this.user, home);
-                home.setSizeFull();
-                home.setWidth("100%");
-                layout.addComponent(home);
-                layout.setExpandRatio(home, 1.0f);
                 break;
             case RentalTool.CREATE_USER:
                 if (viewId != null) {
@@ -135,7 +141,7 @@ public class MainViewImpl extends SecurePageComponent implements View, MainView,
                 layout.setExpandRatio(reservationForm, 1.0f);
                 break;
             case RentalTool.LIST_RESERVATION:
-                ReservationListViewImpl reservationList = new ReservationListViewImpl();
+                ReservationListViewImpl reservationList = new ReservationListViewImpl(null);
                 UserFormViewImpl main2 = new UserFormViewImpl(this.user);
                 new UserPresenter(this.user, main2);
                 new ReservationListPresenter(this.reservation, reservationList);
@@ -143,6 +149,29 @@ public class MainViewImpl extends SecurePageComponent implements View, MainView,
                 reservationList.setWidth("100%");
                 layout.addComponent(reservationList);
                 layout.setExpandRatio(reservationList, 1.0f);
+                break;
+            case RentalTool.ADD_GADGET:
+                if (viewId != null) {
+                    this.gadget = this.gadget.getGadget(viewId);
+                }
+                GadgetFormViewImpl gadgetForm = new GadgetFormViewImpl(this.gadget);
+                UserFormViewImpl main3 = new UserFormViewImpl(this.user);
+                new UserPresenter(this.user, main3);
+                new GadgetPresenter(this.gadget, gadgetForm);
+                gadgetForm.setSizeFull();
+                gadgetForm.setWidth("100%");
+                layout.addComponent(gadgetForm);
+                layout.setExpandRatio(gadgetForm, 1.0f);
+                break;
+            case RentalTool.LIST_GADGETS:
+                GadgetListViewImpl gadgetList = new GadgetListViewImpl();
+                UserFormViewImpl main4 = new UserFormViewImpl(this.user);
+                new UserPresenter(this.user, main4);
+                new GadgetListPresenter(this.gadget, gadgetList);
+                gadgetList.setSizeFull();
+                gadgetList.setWidth("100%");
+                layout.addComponent(gadgetList);
+                layout.setExpandRatio(gadgetList, 1.0f);
                 break;
         }
 

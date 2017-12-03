@@ -18,6 +18,9 @@ public class RentalTool extends UI {
     public static final String LIST_USERS = "Users";
     public static final String CREATE_RESERVATION = "Reservation";
     public static final String LIST_RESERVATION = "Reservations";
+    public static final String EDIT_PROFILE = "Profile";
+    public static final String ADD_GADGET = "Gadget";
+    public static final String LIST_GADGETS = "Gadgets";
 
     @Override
     public void init(VaadinRequest request) {
@@ -30,10 +33,10 @@ public class RentalTool extends UI {
         UserModel userModel = new UserModel();
 
         new LoginPresenter(userModel, loginView);
-        // TODO add mainPresenter
 
         navigator.addView(HOME, mainView);
         navigator.addView(LOGIN, loginView);
         navigator.addView("", loginView);
+        navigator.setErrorView(loginView);
     }
 }

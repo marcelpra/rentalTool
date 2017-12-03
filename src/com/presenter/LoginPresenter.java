@@ -23,6 +23,7 @@ public class LoginPresenter implements LoginView.LoginViewListener {
         Boolean loginSuccess = model.login(username, password);
 
         System.out.println("login result: " + loginSuccess);
+
         // check login result
         if (!loginSuccess) {
             // get error message

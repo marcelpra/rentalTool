@@ -33,7 +33,7 @@ public class GadgetListViewImpl extends CustomComponent implements View, GadgetL
         grid.setDataProvider(dataProvider);
         grid.setItems(gadgets);
         grid.addComponentColumn(data -> {
-            String gadgetID = data.getGadgetID();
+            Integer gadgetID = data.getGadgetID();
             Button editButton = new Button(VaadinIcons.EDIT);
             editButton.addStyleNames(ValoTheme.BUTTON_PRIMARY);
             editButton.setSizeFull();
