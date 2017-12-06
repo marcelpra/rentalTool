@@ -6,38 +6,31 @@ import java.sql.*;
 import java.sql.Date;
 import java.util.*;
 
-//Klasse GadgetModel mit allen Attributen
 public class GadgetModel {
 
     private String category;
     private Integer gadgetID = null;
     private String description;
-    private Integer inventory_No;
+    private String inventory_No;
     private Boolean gadget_active = true;
     private Date createdTimestamp;
 
     private String errorMsg = "";
     private String successMsg = "";
 
-    //Validierung der Attribute für Pflichtfelder auf GUI
     private Boolean validate() {
         if (category == null || category.isEmpty()) {
             errorMsg = "Category not set";
             return false;
         }
-
         if (description == null || description.isEmpty()) {
             errorMsg = "Description not set";
             return false;
         }
-        /*if (inventory_No == null || inventory_No.isEmpty()) {
+        if (inventory_No == null || inventory_No.isEmpty()) {
             errorMsg = "Inventory_No not set";
             return false;
         }
-        if (gadget_active == null || gadget_active.isEmpty()) {
-            errorMsg = "Gadget_active not set";
-            return false;
-        }*/
         return true;
     }
 
@@ -59,18 +52,16 @@ public class GadgetModel {
             // get connection
             connection = dbConnector.getConnection();
             // prepare and build sql insert query
-            String sql = "INSERT INTO gadget (category, gadgetID, description, inventory_No, gadget_active, created_timestamp) " +
-                    "VALUES (?, ?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO gadget (category, description, inventory_No, gadget_active) " +
+                    "VALUES (?, ?, ?, ?)";
             PreparedStatement stmt = connection.prepareStatement(sql);
             stmt.setString(1, category);
-            stmt.setInt(2, gadgetID);
-            stmt.setString(3, description);
-            stmt.setInt(4, inventory_No);
-            stmt.setBoolean(5, gadget_active);
-            stmt.setDate(6, createdTimestamp);
+            stmt.setString(2, description);
+            stmt.setString(3, inventory_No);
+            stmt.setBoolean(4, gadget_active);
             countRow = stmt.executeUpdate();
         } catch (Exception e) {
-            this.errorMsg = "user creating not successful";
+            this.errorMsg = "gadget creating not successful";
             e.printStackTrace();
         } finally {
             dbConnector.closeConnection(connection);
@@ -78,7 +69,7 @@ public class GadgetModel {
 
         // check result
         if (countRow > 0) {
-            this.successMsg = "gadget successfully created with Password: ";
+            this.successMsg = "gadget successfully created";
             return true;
         } else {
             this.errorMsg = "creating gadget not successful";
@@ -101,25 +92,20 @@ public class GadgetModel {
         int countRow = 0;
 
         // only allow Admins to update different User then the own
-//        String sessionUser = String.valueOf(VaadinSession.getCurrent().getAttribute("userID"));
-//        if (!validateAccessControl(ROLE_ADMIN) && !sessionUser.equals(userModel.getUserID().toString())) {
-//            this.errorMsg = "not allowed to update this user";
-//            return false;
-//        }
+        // TODO add validation
 
         try {
             // get connection
             connection = dbConnector.getConnection();
 
             // prepare and build sql update query
-            String sql = "UPDATE gadget SET category = ?, gadgetID = ?, description = ?, inventory_No = ?, gadget_active = ?, created_timestamp = ? ";
+            String sql = "UPDATE gadget SET category = ?, description = ?, inventory_No = ?, gadget_active = ? WHERE gadgetID = ?";
             PreparedStatement stmt = connection.prepareStatement(sql);
             stmt.setString(1, category);
-            stmt.setInt(2, gadgetID);
-            stmt.setString(3, description);
-            stmt.setInt(4, inventory_No);
-            stmt.setBoolean(5, gadget_active);
-            stmt.setDate(6, createdTimestamp);
+            stmt.setString(2, description);
+            stmt.setString(3, inventory_No);
+            stmt.setBoolean(4, gadget_active);
+            stmt.setInt(5, gadgetID);
             countRow = stmt.executeUpdate();
         } catch (Exception e) {
             this.errorMsg = "gadget updating not successful";
@@ -138,48 +124,7 @@ public class GadgetModel {
         }
     }
 
-    /*/**
-     * Method to check password, returning true or false
-     * depending if given password matches saved password for given email
-     *
-     * @param username given username
-     * @param password given password
-     */
-    /*public Boolean login(String username, String password) {
-
-        UserModel user = queryUser("email", username);
-
-        // if no user was found, the password was not set
-        if (user.password == null) {
-            this.errorMsg = "no password set";
-            return false;
-        }
-
-        // check passwords
-        if (!checkPassword(password, user.password)) {
-            this.errorMsg = "email or password incorrect";
-            return false;
-        }
-
-        // generate access token
-        user.accessToken = RandomStringUtils.randomAlphanumeric(32);
-        user.expiry = new Timestamp(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(LOGIN_EXPIRY));
-
-        Boolean updateOk = user.updateUser();
-        if (!updateOk) {
-            this.errorMsg = "could not set token or expiry";
-            return false;
-        }
-
-        // create new session and save user id into it
-        VaadinSession.getCurrent().setAttribute("userID", user.userID);
-        VaadinSession.getCurrent().setAttribute("accessToken", user.accessToken);
-
-        return true;
-    }
-    */
-
-     /**
+    /**
      * Method that searches for a gadget by gadgetID
      *
      * @param gadgetID the id of the gaget
@@ -217,8 +162,7 @@ public class GadgetModel {
         return resultData;
     }
 
-
-        /**
+    /**
      * Binds query result to userModel
      *
      * @param result      the query result
@@ -232,7 +176,7 @@ public class GadgetModel {
                 gadget.setCategory(result.getString("category"));
                 gadget.setGadgetID(result.getInt("gadgetID"));
                 gadget.setDescription(result.getString("description"));
-                gadget.setInventory_No(result.getInt("inventory_No"));
+                gadget.setInventory_No(result.getString("inventory_No"));
                 gadget.setGadget_active(result.getBoolean("gadget_active"));
                 gadget.setCreatedTimestamp(result.getDate("created_timestamp"));
                 returnValue.add(gadget);
@@ -261,9 +205,6 @@ public class GadgetModel {
 
             // prepare and build sql update query
             String sql = "SELECT * FROM gadget WHERE " + searchField.toString() + " = ? LIMIT 1";
-
-            // add access control condition to query
-//            sql = sql + accessControl();
 
             PreparedStatement stmt = connection.prepareStatement(sql);
             stmt.setString(1, searchArgument);
@@ -313,11 +254,11 @@ public class GadgetModel {
         this.description = description;
     }
 
-    public Integer getInventory_No() {
+    public String getInventory_No() {
         return inventory_No;
     }
 
-    public void setInventory_No(Integer inventory_No) {
+    public void setInventory_No(String inventory_No) {
         this.inventory_No = inventory_No;
     }
 

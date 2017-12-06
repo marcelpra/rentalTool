@@ -23,9 +23,6 @@ public class GadgetFormViewImpl extends SecurePageComponent implements GadgetFor
 
     private ComboBox<Boolean> statusField = new ComboBox<>("Status");
 
-    /*private ComboBox<Boolean> statusField = new ComboBox<>("Status");
-    private ComboBox<String> userroleField = new ComboBox<>("Select User-Role");*/
-
     public GadgetFormViewImpl(GadgetModel gadget) {
 
         System.out.println("constructor enter");
@@ -100,10 +97,6 @@ public class GadgetFormViewImpl extends SecurePageComponent implements GadgetFor
         statusSelect.add(1, false);
 
         statusField.setItems(statusSelect);
-        /*userroleField.setWidth(100, Unit.PERCENTAGE);
-        userroleField.setEmptySelectionAllowed(false);
-        userroleField.setEmptySelectionCaption("please select");
-        userroleField.setItems("Admin", "Employee", "User");*/
 
         // define error message label
         errorMsg.setStyleName("failure align-center");
@@ -120,6 +113,11 @@ public class GadgetFormViewImpl extends SecurePageComponent implements GadgetFor
         form.setWidth(100, Unit.PERCENTAGE);
         form.setMargin(true);
 
+        System.out.println(categoryField.getValue());
+        System.out.println(descriptionField.getValue());
+        System.out.println(inventory_NoField.getValue());
+        System.out.println(statusField.getValue());
+
         // bind form to gadgetModel
         Binder<GadgetModel> binder = new Binder<>();
         binder.forField(categoryField)
@@ -127,7 +125,6 @@ public class GadgetFormViewImpl extends SecurePageComponent implements GadgetFor
         binder.forField(descriptionField)
                 .bind(GadgetModel::getDescription, GadgetModel::setDescription);
         binder.forField(inventory_NoField)
-                .withConverter(new StringToIntegerConverter("Must enter a number"))
                 .bind(GadgetModel::getInventory_No, GadgetModel::setInventory_No);
         binder.forField(statusField)
                 .bind(GadgetModel::getGadget_active, GadgetModel::setGadget_active);
