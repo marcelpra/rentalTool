@@ -56,7 +56,7 @@ public class GadgetListPresenter implements GadgetListView.GadgetListViewListene
                 case "ID":
                     TextField gadgetID = (TextField) column;
                     System.out.println(column.getId() + "value: " + gadgetID.getValue());
-                    dataProvider.addFilter(GadgetModel::getGadgetID, s -> s.equals(gadgetID.getValue()));
+                    dataProvider.addFilter(GadgetModel::getGadgetID, s -> s.toString().contains(gadgetID.getValue()));
                     break;
                 case "Description":
                     TextField description = (TextField) column;
@@ -66,12 +66,14 @@ public class GadgetListPresenter implements GadgetListView.GadgetListViewListene
                 case "Inventory_No":
                     TextField inventory_no = (TextField) column;
                     System.out.println(column.getId() + "value: " + inventory_no.getValue());
-                    dataProvider.addFilter(GadgetModel::getInventory_No, s -> s.equals(inventory_no.getValue()));
+                    dataProvider.addFilter(GadgetModel::getInventory_No, s -> s.contains(inventory_no.getValue()));
                     break;
-                case "Gadget_active":
-                    TextField gadget_active = (TextField) column;
-                    System.out.println(column.getId() + "value: " + gadget_active.getValue());
-                    dataProvider.addFilter(GadgetModel::getGadget_active, s -> s.equals(gadget_active.getValue()));
+                case "Status":
+                    ComboBox status = (ComboBox) column;
+                    System.out.println(column.getId() + "value: " + status.getValue());
+                    if (status.getValue() != null) {
+                        dataProvider.addFilter(GadgetModel::getGadget_active, s -> s.equals(status.getValue()));
+                    }
                     break;
             }
         }

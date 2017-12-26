@@ -89,6 +89,8 @@ public class GadgetListViewImpl extends CustomComponent implements View, GadgetL
         cell.setComponent(addGadget());
         cell = (Header.Row.Cell) headerRow.getCell("Inventory_No");
         cell.setComponent(filterField("Inventory_No"));
+        cell = (Header.Row.Cell) headerRow.getCell("Status");
+        cell.setComponent(filterDropDown("Status"));
     }
 
     /**
