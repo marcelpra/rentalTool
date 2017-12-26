@@ -163,7 +163,7 @@ public class GadgetModel {
     }
 
     /**
-     * Binds query result to userModel
+     * Binds query result to gadgetModel
      *
      * @param result      the query result
      * @param returnValue the array list where we pass the result to
@@ -189,7 +189,7 @@ public class GadgetModel {
     }
 
     /**
-     * General method to query for a single user by specific field
+     * General method to query for a single gadget by specific field
      *
      * @param searchField    the column of database table to search for argument
      * @param searchArgument the criteria for the search

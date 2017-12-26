@@ -134,14 +134,6 @@ public class ReservationModel {
         Connection connection = null;
         int countRow = 0;
 
-        // only allow Admins to update different User then the own
-        // TODO update during login is not possible and during login we need to allow to update own user
-//        String sessionUser = String.valueOf(VaadinSession.getCurrent().getAttribute("userID"));
-//        if (!validateAccessControl(ROLE_ADMIN) && !sessionUser.equals(userModel.getUserID().toString())) {
-//            this.errorMsg = "not allowed to update this user";
-//            return false;
-//        }
-
         try {
             // get connection
             connection = dbConnector.getConnection();
