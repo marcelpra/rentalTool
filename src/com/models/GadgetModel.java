@@ -70,6 +70,9 @@ public class GadgetModel {
         // check result
         if (countRow > 0) {
             this.successMsg = "gadget successfully created";
+
+            // set availability for future
+            AvailabilityModel.prepareAvailability();
             return true;
         } else {
             this.errorMsg = "creating gadget not successful";
@@ -132,6 +135,99 @@ public class GadgetModel {
      */
     public GadgetModel getGadget(Integer gadgetID) {
         return queryGadget("gadgetID", gadgetID.toString());
+    }
+
+    public static GadgetModel getGadgetById(Integer gadgetId) {
+        GadgetModel resultData = new GadgetModel();
+        Connection connection = null;
+
+        try {
+            // get connection
+            connection = dbConnector.getConnection();
+
+            // prepare and build sql update query
+            String sql = "SELECT * FROM gadget WHERE gadgetID = ?";
+            PreparedStatement stmt;
+            stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, gadgetId);
+            ResultSet result = stmt.executeQuery();
+
+            while (result.next()) {
+                GadgetModel gadget = new GadgetModel();
+                gadget.category = result.getString("category");
+                gadget.gadgetID = result.getInt("gadgetID");
+                gadget.description = result.getString("description");
+                gadget.inventory_No = result.getString("inventory_No");
+                gadget.gadget_active = result.getBoolean("gadget_active");
+                resultData = gadget;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            dbConnector.closeConnection(connection);
+        }
+
+        return resultData;
+    }
+
+    public static List<String> getGadgetCategories() {
+
+        // TODO add dateFrom and dateTo to input parameters to join availability table and select only available gadgets
+        ArrayList<String> resultData = new ArrayList<>();
+        Connection connection = null;
+
+        try {
+            // get connection
+            connection = dbConnector.getConnection();
+
+            // prepare and build sql update query
+            String sql = "SELECT DISTINCT category FROM gadget";
+            PreparedStatement stmt;
+            stmt = connection.prepareStatement(sql);
+            ResultSet result = stmt.executeQuery();
+
+            while (result.next()) {
+                resultData.add(result.getString("category"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            dbConnector.closeConnection(connection);
+        }
+
+        return resultData;
+    }
+
+    public static List<GadgetModel> getGadgetsForCategory(String category) {
+
+        // TODO add dateFrom and dateTo to input parameters to join availability table and select only available gadgets
+        ArrayList<GadgetModel> resultData = new ArrayList<>();
+        Connection connection = null;
+
+        try {
+            // get connection
+            connection = dbConnector.getConnection();
+
+            // prepare and build sql update query
+            String sql = "SELECT * FROM gadget WHERE category = ?";
+            PreparedStatement stmt;
+            stmt = connection.prepareStatement(sql);
+            stmt.setString(1, category);
+            ResultSet result = stmt.executeQuery();
+
+            while (result.next()) {
+                GadgetModel gadget = new GadgetModel();
+                gadget.gadgetID = result.getInt("gadgetID");
+                gadget.description = result.getString("description");
+                resultData.add(gadget);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            dbConnector.closeConnection(connection);
+        }
+
+        return resultData;
     }
 
     /**

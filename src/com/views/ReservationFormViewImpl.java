@@ -3,6 +3,7 @@ package com.views;
 import com.SecurePageComponent;
 import com.models.AvailabilityModel;
 import com.models.GadgetDummy;
+import com.models.GadgetModel;
 import com.models.ReservationModel;
 import com.vaadin.data.*;
 import com.vaadin.icons.VaadinIcons;
@@ -104,7 +105,7 @@ public class ReservationFormViewImpl extends SecurePageComponent implements Rese
 
         // add all possible categories to gadgetCategoryField
         gadgetCategoryField.setPlaceholder("select Category");
-        gadgetCategoryField.setItems(GadgetDummy.getGadgetCategories());
+        gadgetCategoryField.setItems(GadgetModel.getGadgetCategories());
         gadgetCategoryField.addValueChangeListener(event -> {
             System.out.println("selected item: " + event.getValue());
             updateGadgetComboBox(event.getValue());
@@ -208,7 +209,7 @@ public class ReservationFormViewImpl extends SecurePageComponent implements Rese
             selectedItem.addClickListener(event -> {
                 removeGadgetSelection(gadget, layout);
             });
-            selectedItem.setCaption(GadgetDummy.getGadgetById(gadget).getDescription());
+            selectedItem.setCaption(GadgetModel.getGadgetById(gadget).getDescription());
             layout.addComponent(selectedItem);
             resultList.add(gadget);
         }
@@ -268,11 +269,11 @@ public class ReservationFormViewImpl extends SecurePageComponent implements Rese
         List<Integer> gadgetItems = new ArrayList<>();
 
         // TODO add availability check to the getGadget... function
-        List<GadgetDummy> gadgets = GadgetDummy.getGadgetsForCategory(category);
+        List<GadgetModel> gadgets = GadgetModel.getGadgetsForCategory(category);
 
         Integer iterator = 0;
-        for (GadgetDummy gadget : gadgets) {
-            gadgetItems.add(iterator, gadget.getGadgetId());
+        for (GadgetModel gadget : gadgets) {
+            gadgetItems.add(iterator, gadget.getGadgetID());
             iterator++;
         }
 
@@ -280,7 +281,7 @@ public class ReservationFormViewImpl extends SecurePageComponent implements Rese
         gadgetField.setItemCaptionGenerator(new ItemCaptionGenerator<Integer>() {
             @Override
             public String apply(Integer integer) {
-                return GadgetDummy.getGadgetById(integer).getDescription();
+                return GadgetModel.getGadgetById(integer).getDescription();
             }
         });
 

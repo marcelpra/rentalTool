@@ -204,7 +204,7 @@ public class ReservationModel {
                 stmt = connection.prepareStatement(sql);
                 stmt.setInt(1, userId);
                 stmt.setObject(2, today);
-            } else if (!UserModel.validateAccessControl(UserModel.ROLE_ADMIN)) {
+            } else if (!UserModel.validateAccessControl(UserModel.ROLE_ADMIN) && !UserModel.validateAccessControl(UserModel.ROLE_EMPLOYEE)) {
                 sql = sql + " WHERE user_ID = ?";
                 if (sessionUser == null) {
                     return resultData;

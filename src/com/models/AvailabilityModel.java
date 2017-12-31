@@ -250,18 +250,17 @@ public class AvailabilityModel {
 
         Boolean updateSuccess = false;
 
-        List<GadgetDummy> gadgets = GadgetDummy.getGadgets();
+        List<GadgetModel> gadgets = GadgetModel.getGadgets();
 
-        for (GadgetDummy gadget : gadgets) {
+        for (GadgetModel gadget : gadgets) {
             // get latest day of availability
-            LocalDate startDate = getLatestAvailability(gadget.getGadgetId());
+            LocalDate startDate = getLatestAvailability(gadget.getGadgetID());
             startDate = startDate.plusDays(1);
             LocalDate today = LocalDate.now();
             System.out.println("latest availability date: " + startDate);
 
             // write availability 1 year in advance
-            // TODO change number of days or use constant
-            LocalDate endDate = today.plusDays(10);
+            LocalDate endDate = today.plusDays(365);
 
             // if latest day of availability is already set to 1 year in advance, continue
             if (!endDate.isAfter(startDate)) {
@@ -270,7 +269,7 @@ public class AvailabilityModel {
             updateSuccess = setAvailability(
                     startDate,
                     endDate,
-                    gadget.getGadgetId(),
+                    gadget.getGadgetID(),
                     STATUS_AVAILABLE,
                     0,
                     "create"
